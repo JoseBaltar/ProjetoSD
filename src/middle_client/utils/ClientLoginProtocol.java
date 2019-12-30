@@ -1,26 +1,39 @@
 package middle_client.utils;
 
+import com.google.gson.*;
+import middle_client.UserTracking;
+
+import java.io.*;
+import java.util.ArrayList;
+
 /**
  * TODO fazer o registo e login para ficheiros, utilizar o shared object "UserTracking"
  */
 public class ClientLoginProtocol {
     private static enum MainStates {
         CHECK_LOGIN, REGISTER_CLIENT, LOGGED
-    };
+    }
+
+    ;
 
     private static enum SecStates {
-        NOT_DEFINED, GET_USERNAME, GET_PASSWORD, RETYPE_PASSWORD
-    };
+        NOT_DEFINED, GET_USERNAME, GET_PASSWORD, REQUEST_SERVER_DATA, GET_SERVER_DATA, RETYPE_PASSWORD
+    }
+
+    ;
 
     private MainStates main_state = MainStates.CHECK_LOGIN;
     private SecStates sec_state = SecStates.NOT_DEFINED;
 
+    private String username;
     private String location;
     private String password = "";
     private boolean dummy = false;
+    private UserTracking tracking;
 
-    public ClientLoginProtocol(String location) {
+    public ClientLoginProtocol(String location, UserTracking tracking) {
         this.location = location;
+        this.tracking = tracking;
     }
 
     public String processInput(String theInput) {
@@ -39,7 +52,7 @@ public class ClientLoginProtocol {
             if (sec_state == SecStates.GET_USERNAME) {
                 if (!theInput.isEmpty()) {
                     theOutput = "Invalid Username! Enter your username.";
-                } else if (/* theInput does not exist in registered users */dummy) {
+                } else if (tracking.checkUserClear(theInput)) {
                     theOutput = "Client is not registered, want to register? Type %register, or enter a new username.";
                 } else {
                     // User exists
@@ -85,10 +98,20 @@ public class ClientLoginProtocol {
                     sec_state = SecStates.GET_USERNAME;
                     password = "";
                 } else {
-                    /** 
+                    /**
                      * TODO Register Client 
                      */
                     main_state = MainStates.CHECK_LOGIN;
+                }
+            } else if (sec_state == SecStates.REQUEST_SERVER_DATA) {
+                theOutput = "findUserLogin:<username>";
+                sec_state = SecStates.GET_SERVER_DATA;
+            } else if (sec_state == SecStates.GET_SERVER_DATA) {
+                //false nao encontrado, true se encontrado
+                if (theInput.equals("false")) {
+
+                } else if (theInput.equals("true")) {
+
                 }
             } else {
                 theOutput = "Welcome to the Registration Page! Enter your username. (To go back to Login page type %cancel!)";
@@ -99,4 +122,93 @@ public class ClientLoginProtocol {
         }
         return theOutput;
     }
+    //Em ficheiro TXT,
+    @Deprecated
+    public String registerUser() {
+        String userdata = username + ";" + password + ";" + location + "; \n";
+        try (Writer writer = new BufferedWriter(new OutputStreamWriter(
+                new FileOutputStream("userfile.txt"), "utf-8"))) {
+            writer.write(userdata);
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return userdata;
+    }
+
+    public JsonElement loadUsersFromJSONFile() {
+        JsonElement json; // JsonElement correspondente ao ficheiro
+        try
+        { // Leitura do ficheiro e parse para uma instância de JsonElement
+            FileReader inputFile = new FileReader("utilizadores.json");
+
+            JsonParser parser = new JsonParser();
+            json = parser.parse(inputFile);
+
+        } catch (FileNotFoundException ex)
+        { // Retorna null se o ficheiro não existir
+            return null;
+        }
+
+        if (json.isJsonArray() && json.getAsJsonArray().size() == 0)
+        {
+            return null;
+        }
+
+        return json;
+    }
+
+    public boolean registerUserJson() {
+
+        Gson gson = new Gson(); // Instância gson para escrever o ficheiro Json
+        File pathf = new File("userfile.json"); // Ficheiro de destino
+        JsonElement file = this.loadUsersFromJSONFile();
+        JsonArray utilizadores
+                = (file != null && file.isJsonArray()
+                ? file.getAsJsonArray() : new JsonArray());
+
+        JsonObject utilizador = new JsonObject();
+        utilizador.addProperty("username",username);
+        utilizador.addProperty("password", password);
+        utilizador.addProperty("location", location);
+        tracking.addRegisteredUser(utilizador);
+        utilizadores.add(utilizador);
+
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(pathf))) {
+            writer.write(gson.toJson(utilizadores));
+            writer.flush();
+        } catch (IOException ex) {
+            System.err.println("[" + ex.getClass().getName() + "] "
+                    + "Erro na escrita do ficheiro" );
+            return false;
+        }
+
+        return true;
+    }
+
+    //Em ficheiro TXT,
+    @Deprecated
+    public ArrayList<String> getRegisteredUsers() {
+        try {
+            BufferedReader br = new BufferedReader(new FileReader("userfile.txt"));
+            String line = br.readLine();
+            ArrayList<String> users = new ArrayList<>();
+
+            while (line != null) {
+                users.add(line);
+                line = br.readLine();
+            }
+            br.close();
+            return users;
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
 }
