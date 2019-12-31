@@ -43,6 +43,14 @@ public class UserTracking {
         return registeredUsername.add(obj.get("username").getAsString());
     }
 
+    public synchronized boolean checkPassword(String password, String username){
+        for(int ix=0; ix<=registeredUsername.size(); ix++) {
+            if (username.equals(registeredUsername.get(ix)))
+                return password.equals(registeredUsers.get(ix).getPassword());
+        }
+        return false;
+    }
+
     public Iterator<ClientUserModel> getAllUsers(){
         return  registeredUsers.iterator();
     }

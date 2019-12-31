@@ -26,6 +26,7 @@ public class ClientLoginProtocol {
     private SecStates sec_state = SecStates.NOT_DEFINED;
 
     private String username;
+
     private String location;
     private String password = "";
     private boolean dummy = false;
@@ -38,7 +39,7 @@ public class ClientLoginProtocol {
 
     public String processInput(String theInput) {
         String theOutput = null;
-
+        String tempusername = "";
         // Check special inputs
         if (theInput.equals("%register")) {
             main_state = MainStates.REGISTER_CLIENT;
@@ -56,16 +57,18 @@ public class ClientLoginProtocol {
                     theOutput = "Client is not registered, want to register? Type %register, or enter a new username.";
                 } else {
                     // User exists
+                    tempusername = theInput;
                     theOutput = "Enter your password.";
                     sec_state = SecStates.GET_PASSWORD;
                 }
             } else if (sec_state == SecStates.GET_PASSWORD) {
-                if (/* password incorrect */dummy) {
+                if (!tracking.checkPassword(theInput, tempusername)) {
                     theOutput = "Password is incorrect. Retype password or write %cancel to change username.";
                 } else {
                     /**
-                     * TODO Login User 
+                     * TODO Login User
                      */
+                    tracking.loginUser(tempusername);
                     theOutput = "logged-in"; // key-word for enabling login in communication thread
                     main_state = MainStates.LOGGED;
                 }
@@ -77,10 +80,11 @@ public class ClientLoginProtocol {
             if (sec_state == SecStates.GET_USERNAME) {
                 if (theInput.length() < 3 && theInput.length() > 30) {
                     theOutput = "Username must be within 3 and 30 characters. Enter username.";
-                } else if (/* theInput exists in registered users */dummy) {
+                } else if (tracking.checkUserClear(theInput)) {
                     theOutput = "Client already exists. Write a new username or %cancel to go back to Login!";
                 } else {
                     // User is new
+                    username = theInput;
                     theOutput = "Enter password.";
                     sec_state = SecStates.GET_PASSWORD;
                 }
@@ -101,6 +105,7 @@ public class ClientLoginProtocol {
                     /**
                      * TODO Register Client 
                      */
+                    registerUserJson();
                     main_state = MainStates.CHECK_LOGIN;
                 }
             } else if (sec_state == SecStates.REQUEST_SERVER_DATA) {
