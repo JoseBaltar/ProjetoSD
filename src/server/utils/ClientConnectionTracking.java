@@ -1,13 +1,13 @@
-package server;
+package server.utils;
 
 import java.util.ArrayList;
 import java.util.Iterator;
 
-public class NetworkPorts {
+public class ClientConnectionTracking {
 
     private ArrayList<Integer> eventPeriodPorts;
 
-    NetworkPorts() {
+    public ClientConnectionTracking() {
         eventPeriodPorts = new ArrayList<>();
     }
 

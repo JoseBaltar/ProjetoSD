@@ -9,13 +9,14 @@ public class ClientLoginProtocol {
     };
 
     private static enum SecStates {
-        NOT_DEFINED, GET_USERNAME, GET_PASSWORD, RETYPE_PASSWORD
+        NOT_DEFINED, GET_USERNAME, GET_PASSWORD, RETYPE_PASSWORD, REQUEST_SERVER_DATA, GET_SERVER_DATA
     };
 
     private MainStates main_state = MainStates.CHECK_LOGIN;
     private SecStates sec_state = SecStates.NOT_DEFINED;
 
     private String location;
+    private String username = "";
     private String password = "";
     private boolean dummy = false;
 
@@ -43,12 +44,23 @@ public class ClientLoginProtocol {
                     theOutput = "Client is not registered, want to register? Type %register, or enter a new username.";
                 } else {
                     // User exists
+                    username = theInput;
                     theOutput = "Enter your password.";
                     sec_state = SecStates.GET_PASSWORD;
                 }
             } else if (sec_state == SecStates.GET_PASSWORD) {
                 if (/* password incorrect */dummy) {
                     theOutput = "Password is incorrect. Retype password or write %cancel to change username.";
+                } else {
+                    theOutput = "findUserLogin:" + username;
+                    sec_state = SecStates.GET_SERVER_DATA;
+                }
+            } else if (sec_state == SecStates.GET_SERVER_DATA) {
+                if (theInput.startsWith("true")) {
+                    /** User has a login in another location */
+                    theOutput = "You are already logged-in in " + theInput.substring(theInput.indexOf(",", 0))
+                                    + ". Please logout or try another account.";
+                    sec_state = SecStates.GET_USERNAME;
                 } else {
                     /**
                      * TODO Login User 

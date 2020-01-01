@@ -15,6 +15,11 @@ public class WaitOccurrenceThread extends Thread {
     private String multicastIPAdress;
     private int multicastPort;
 
+    WaitOccurrenceThread() throws SocketException {
+        super();
+        this.socket = new DatagramSocket(); // socket for listening to server notifications
+    }
+
     WaitOccurrenceThread(String multicastIPAddress, int multicastPort) throws SocketException {
         super();
         this.multicastIPAdress = multicastIPAddress;

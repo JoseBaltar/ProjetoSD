@@ -16,6 +16,14 @@ public class MiddleClientLoginProtocol {
     private SecStates sec_state = SecStates.NOT_DEFINED;
 
     private boolean dummy = false;
+    private ClientConnectionTracking shared;
+
+    private String locationName, multicastIP;
+    private int multicastPort;
+
+    public MiddleClientLoginProtocol(ClientConnectionTracking shared) {
+        this.shared = shared;
+    }
 
     public String processInput(String theInput) {
         String theOutput = null;
@@ -27,10 +35,9 @@ public class MiddleClientLoginProtocol {
         }
 
         /**
-         * TODO no final da validação para o login, enviar uma resposta com "getport"
-         * , para adicionar a porta do socket em "waitOccurrenceThread" 
-         * (ver o codigo do login em "MiddleClientCommunicationThread")
-         * 
+         * TODO guardar nome da localização, multicast ip e porta durante o processar do protocolo
+         * NOTA: o ip e porta do multicast vao ser gerados automaticamente aqui ou no ClientConnectionTracking.
+         *      Quando forem gerados devem ser guardados em variaveis neste protocolo para possibilitar os metodos "get"
          */
 
         if (dummy) {
@@ -41,5 +48,17 @@ public class MiddleClientLoginProtocol {
             // more ...
         }
         return theOutput;
+    }
+
+    public String getLocationName() {
+        return this.locationName;
+    }
+
+    public String getMulticastIP() {
+        return this.multicastIP;
+    }
+
+    public int getMulticastPort() {
+        return this.multicastPort;
     }
 }
