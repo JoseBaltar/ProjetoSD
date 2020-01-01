@@ -70,7 +70,7 @@ public class Citizen {
                                 System.out.print("\nSuccessfully Logged In. Starting Notification Services ...\n");
                                 
                                 // Open thread for processing occurrence warnings
-                                serverOutput = from_server.readLine();
+                                serverOutput = from_server.readLine(); // get extra information from server
                                 separator = serverOutput.indexOf(":", 0);
                                 multicastIP = serverOutput.substring(0, separator);
                                 multicastPort = Integer.parseInt(serverOutput.substring(separator, serverOutput.length()));

@@ -20,15 +20,15 @@ public class ServerCommunicationThread extends Thread {
 
     private Socket clientConnection;
 
-    private ClientConnectionTracking shared;
+    private ClientConnectionTracking sharedConnTracking;
     private MiddleClientLoginProtocol login_protocol;
     private ServerEventNotificationProtocol notification_protocol;
 
-    ServerCommunicationThread(Socket clientConnection, ClientConnectionTracking shared) {
+    ServerCommunicationThread(Socket clientConnection, ClientConnectionTracking sharedConnTracking) {
         super();
         this.clientConnection = clientConnection;
-        this.shared = shared;
-        this.login_protocol = new MiddleClientLoginProtocol(shared);
+        this.sharedConnTracking = sharedConnTracking;
+        this.login_protocol = new MiddleClientLoginProtocol(sharedConnTracking);
         this.notification_protocol = new ServerEventNotificationProtocol();
     }
 
@@ -43,53 +43,65 @@ public class ServerCommunicationThread extends Thread {
             // PROCESS INPUT USING PROTOCOL
 
             /** Register and Login Client */
-            boolean done = false, exit = false;
-            String clientInp;
-            String processed;
+            boolean quit = false;
+            String clientInp, processed;
+
+            String[] locations;
+            String event, ip; int port;
+
             out.println(login_protocol.processInput(""));
-            while (!done && (clientInp = in.readLine()) != null) {
-                if (clientInp.equalsIgnoreCase("%exit")) {
-                    /** Check client input for exiting */
-                    exit = done = true;
+            while (!quit && (clientInp = in.readLine()) != null) {
+                if (clientInp.equalsIgnoreCase("%quit")) {
+                    /** Check if client exited during login */
+                    System.out.println("Client canceled the login. Terminating connection ...");
+                    quit = true;
                 } else {
                     /** Process client input through the protocol */
                     if ((processed = login_protocol.processInput(clientInp)).equalsIgnoreCase("logged-in")) {
+                        /** Middle-Client Logged-In */
                         out.println(processed);
                         // send locationName, multicast IP and Port to middle-client+
                         out.println(login_protocol.getLocationName() + ":" + login_protocol.getMulticastIP() + ":" + login_protocol.getMulticastPort());
-                        done = true;
+                        // get extra information from client, about listening socket port, to enable sending occurence notifications
+                        login_protocol.processInput(in.readLine()); // GET_CLIENT_LISTENING_PORT main_state no protocolo
+
+                        /** Start processing redirected Client notification requests */
+                        while ((clientInp = in.readLine()) != null) {
+                            // process notification sent by client: locations, ocurrence-degree, description
+                            processed = notification_protocol.processInput(clientInp);
+
+                            // execute server actions on a new event
+                            if (processed.startsWith("create-event")) {
+                                /** Notify every location specified - open a ReceiveReportsThread for every one of them */
+                                /*
+                                INFORMACAO PARA O PROTOCOLO
+                                O protocolo retorna os detalhes do evento, o IP e a listening port de cada localização
+                                detalhes separado por ";", 
+                                localizações por ":" começando pelo final do anterior,
+                                ip e porta por ","
+                                */
+                                event = processed.substring(0, processed.indexOf(";")); // get event details
+                                locations = processed.substring(processed.indexOf(";")).split(":"); // get locations
+                                System.out.println("\n-----------\nSending Event Notification to all Locations ...");
+                                for (String location : locations) {
+                                    // start the UDP socket connection thread for receiving reports
+                                    ReceiveReportsThread thread = new ReceiveReportsThread(sharedConnTracking);
+                                    thread.start();
+                                    // notify client
+                                    ip = location.substring(0, location.indexOf(","));
+                                    port = Integer.parseInt(
+                                        location.substring(location.indexOf(","), location.length()));
+                                    sendOcurrenceWarning(event, ip, port, thread.getLocalPort()); // check if location received notification
+                                    System.out.println("> Location IP: " + ip + "; PORT: " + port);
+                                }
+                            }
+
+                            // send notification response to client: invalid-data, in-progress or create-event
+                            out.println(processed);
+                        }
+
                     } else {
                         out.println(processed);
-                    }
-                }
-            }
-
-            // Check if client exited while logging in and terminate the connection
-            if (!exit) {
-                /** Process Redirected Client Notification Requests */
-                String[] locations;
-                while ((clientInp = in.readLine()) != null) {
-                    // process notification sent by client: locations, ocurrence-degree, description
-                    processed = notification_protocol.processInput(clientInp);
-                    // send notification response to client: invalid-data, in-progress or create-event
-                    out.println(processed);
-
-                    // execute server actions on a new event
-                    if (processed.startsWith("create-event")) {
-                        /** 
-                        * NOTIFY EVERY LOCATION SPECIFIED
-                        * 
-                        * OPEN A ReceiveReportsThread FOR EVERY ONE OF THEM
-                        * 
-                        * protocol send a list of ip and ports of the locations
-                        * (locations separated by ":" and ip and port by ",")
-                        */
-                        locations = processed.split(":");
-                        for (int i = 0; i < locations.length;) {
-                            // start the UDP socket connection thread for receiving reports
-                            ReceiveReportsThread thread = new ReceiveReportsThread(shared);
-                            thread.start();
-                        }
                     }
                 }
             }
@@ -99,7 +111,8 @@ public class ServerCommunicationThread extends Thread {
         }
     }
 
-    private void sendOcurrenceWarning(String ip, int port) {
-
+    private void sendOcurrenceWarning(String event, String ip, int port, int serverListeningPort) {
+        // UDP DatagramSocket para enviar o evento para o Middle-Client
+        // arranjar melhor maneira de verificar se a localização recebeu a notificação
     }
 }

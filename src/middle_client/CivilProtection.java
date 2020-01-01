@@ -15,7 +15,7 @@ import java.net.*;
  * - Se o evento ja esta ativo (evento na mesma localização, com o mesmo grau) nao faz uma nova conexão <bt/>
  */
 public class CivilProtection {
-    private static final String EXIT_INFO = "-------------\nTo close the connection to server write 'exit'.\n-------------\n";
+    private static final String EXIT_INFO = "-------------\nTo close the connection to server write '%quit'.\n-------------\n";
     private static final String EXIT_WARNING = "\n-----\nConnection with Server terminated!\n-----\n";
     private static final String CLIENT_MESSAGE = "\nClient: ";
     private static final String SERVER_RESPONSE = "Server: ";
@@ -60,13 +60,13 @@ public class CivilProtection {
                 boolean exit = false;
                 String userInput;
                 String serverOutput;
-                System.out.print(CivilProtection.EXIT_INFO + CivilProtection.SERVER_RESPONSE 
-                                    + from_server.readLine() + CivilProtection.CLIENT_MESSAGE);
+                System.out.print(EXIT_INFO + SERVER_RESPONSE + from_server.readLine() + CLIENT_MESSAGE);
                 // register/login into main server
                 while (!exit && (userInput = stdIn.readLine()) != null) {
                     // terminate communication
-                    if (userInput.equals("%exit")) {
-                        System.out.println(CivilProtection.EXIT_WARNING);
+                    if (userInput.equals("%quit")) {
+                        to_server.println(userInput);
+                        System.out.println(EXIT_WARNING);
                         System.exit(0);
                     } else {
                         // send input to server
@@ -79,7 +79,7 @@ public class CivilProtection {
 
                         } else {
                             // print server output
-                            System.out.print(CivilProtection.SERVER_RESPONSE + serverOutput + CivilProtection.CLIENT_MESSAGE);
+                            System.out.print(SERVER_RESPONSE + serverOutput + CLIENT_MESSAGE);
                         }
                     }
                 }
@@ -93,7 +93,7 @@ public class CivilProtection {
                 multicastPort = Integer.parseInt(serverOutput.substring(sep2, serverOutput.length()));
                 // create thread for listening to server notifications
                 waitOccurrenceThread = new WaitOccurrenceThread(multicastIP, multicastPort);
-                // send the waitOccurrencePort to enable the server to notify to this Middle-Client
+                // send extra information to server, about the waitOccurrencePort, enabling the server to notify this Middle-Client
                 to_server.println(waitOccurrenceThread.getSocketPort());
 
             } catch (IOException e) {

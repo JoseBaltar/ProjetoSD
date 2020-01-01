@@ -12,14 +12,15 @@ import java.util.concurrent.Semaphore;
 public class BroadcastEventThread extends Thread{
 
     private DatagramSocket socket = null;
-    private String multicastIP;
+    private String multicastIP, event;
     private int multicastPort;
 
     private Semaphore hasNotification = null; // provavelmente nao se vai usar isto, ver o to-do
     // private long WAIT = 5000; // substituido pelo semaphore
 
-    BroadcastEventThread(String multicastIP, int multicastPort) throws SocketException {
+    BroadcastEventThread(String event, String multicastIP, int multicastPort) throws SocketException {
         super();
+        this.event = event;
         this.multicastIP = multicastIP;
         this.multicastPort = multicastPort;
 
@@ -35,7 +36,7 @@ public class BroadcastEventThread extends Thread{
                 byte[] buf = new byte[256];
 
                 // construct packet
-                buf = "VAO TODOS MORRER".getBytes();
+                buf = event.getBytes();// = "VAO TODOS MORRER".getBytes();
 
                 // send it
                 InetAddress group = InetAddress.getByName(multicastIP);

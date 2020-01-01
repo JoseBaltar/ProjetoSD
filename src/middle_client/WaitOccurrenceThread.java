@@ -39,9 +39,12 @@ public class WaitOccurrenceThread extends Thread {
                 // NOTA: verificar a autenticidade da mensagem 
                 // (verificar uma palavra chave, por exemplo, enviado pelo servidor)
 
-                // get server address and port
+                // get server address and port and occurrence event information
+                String response = new String(packet.getData(), 0, packet.getLength()),
+                    event = response.substring(0, response.indexOf(":"));
                 InetAddress address = packet.getAddress();
-                int port = packet.getPort();
+                int port = packet.getPort(), 
+                    serverListeningPort = Integer.parseInt(response.substring(response.indexOf(":")));
 
                 // send ok message to server
                 buf = "OK".getBytes();
@@ -49,9 +52,9 @@ public class WaitOccurrenceThread extends Thread {
                 socket.send(packet);
 
                 // broadcast the ocurrence to all clients
-                new BroadcastEventThread(multicastIPAdress, multicastPort).start();
+                new BroadcastEventThread(event, multicastIPAdress, multicastPort).start();
                 // start sending reports to the server
-                new SendReportsThread(address, port).start();
+                new SendReportsThread(address, serverListeningPort).start();
 
             } catch (IOException e) {
                 e.printStackTrace();

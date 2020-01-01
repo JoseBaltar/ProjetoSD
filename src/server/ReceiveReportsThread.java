@@ -20,6 +20,12 @@ public class ReceiveReportsThread extends Thread {
     ReceiveReportsThread(ClientConnectionTracking shared) throws SocketException {
         this.shared = shared;
         DatagramSocket temp;
+        /**
+         * ESTA VERIFICAÇÃO JA NAO FAZ SENTIDO
+         * 
+         * NAO INTERESSA FAZER GESTAO DAS PORTAS. 
+         * INTERESSA FAZER GESTAO DO EVENTO. OU SEJA, TIPO DO EVENTO, LOCALIZAÇÃO E RESULTADO DOS RELATORIOS RECEBIDOS.
+         */
         while (shared.addEventPeriodPort((temp = new DatagramSocket()).getLocalPort()) == -1) {
             // check if port is already in use
             temp.close();
@@ -32,6 +38,10 @@ public class ReceiveReportsThread extends Thread {
         /*
          * Thread aberta quando um novo evento ocorre. Recebe relatórios do
          * middle-client através de um socket UDP
+         * 
+         * UDP DatagramSocket que espera por relatorios do Middle-Client
+         * (espera até que o relatorio ative a flag de finalização do evento)
+         * 
          */
     }
 

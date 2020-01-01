@@ -14,12 +14,12 @@ public class SendReportsThread extends Thread {
 
     private DatagramSocket socket = null;
     private InetAddress serverAddress;
-    private int serverPort;
+    private int serverListeningPort;
 
-    SendReportsThread(InetAddress serverAddress, int serverPort) throws SocketException {
+    SendReportsThread(InetAddress serverAddress, int serverListeningPort) throws SocketException {
         super();
         this.serverAddress = serverAddress;
-        this.serverPort = serverPort;
+        this.serverListeningPort = serverListeningPort;
         this.socket = new DatagramSocket();
     }
 
@@ -28,6 +28,8 @@ public class SendReportsThread extends Thread {
         /*
          * São enviados periodicamente relatorios para o servidor com o estado do evento,
          * numero de notificados e tempo decorrido. Socket UDP.
+         * 
+         * UDP DatagramSocket que envia relatorios para o Servidor, até que este dê como terminado
          */
     }
 }

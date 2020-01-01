@@ -57,6 +57,7 @@ public class MiddleClientCommunicationThread extends Thread {
             while (!quit && (clientInp = in_cli.readLine()) != null) {
                 if (clientInp.equalsIgnoreCase("%quit")) {
                     /** Check if client exited during login */
+                    System.out.println("Client canceled the login. Terminating connection ...");
                     quit = true;
                 } else {
                     /** Process client input through the protocol */
@@ -71,7 +72,7 @@ public class MiddleClientCommunicationThread extends Thread {
 
                         if (processed.equalsIgnoreCase("logged-in")) {
                             out_cli.println(processed);
-                            // send multicast information to client
+                            // send extra information to client, about the multicast connection
                             out_cli.println(multicastIPAdress + ":" + multicastPort);
                             
                             /** Client Logged-In, start receiving event notifications */
