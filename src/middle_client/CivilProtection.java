@@ -6,7 +6,7 @@ import java.net.*;
 /**
  * Middle-Client (1º):
  * - Registo/Login no servidor <br/>
- * 
+ *
  * Abre threads com socket TCP para Clientes, que resumidamente fazem: <br/>
  * - Registo/Login do Cliente
  * - Depois do login, retorna o ip multicast e a porta para receber notificações (mais detalhes na thread). <br/>
@@ -22,54 +22,51 @@ public class CivilProtection {
 
     public static void main(String[] args) throws IOException {
         /** Check arguments */
-        if (args.length != 5) {
-            System.out.println("Wrong Arguments!\n\nUsage:\n\t" 
-                + "java middle_client.CivilProtection <location_name> <main_server_ip> <main_server_port> <multicast_ip_address> <multicast_port>\nor\n\t");
-        } else if (!args[2].matches("\\d+") && !args[4].matches("\\d+")) {
-            System.out.println("Wrong Arguments! Make sure <serverPort> is a valid integer.\n\nUsage:\n\t" 
-                + "java middle_client.CivilProtection <location_name> <main_server_ip> <main_server_port> <multicast_ip_address> <multicast_port>");
+        if (args.length != 2) {
+            System.out.println("Wrong Arguments!\n\nUsage:\n\t"
+                    + "java middle_client.CivilProtection <main_server_ip> <main_server_port>");
+        } else if (!args[1].matches("\\d+")) {
+            System.out.println("Wrong Arguments! Make sure <serverPort> is a valid integer.\n\nUsage:\n\t"
+                    + "java middle_client.CivilProtection <main_server_ip> <main_server_port>");
         } else {
 
             /** Argument variables */
-            String locationName = args[0];
-            String serverIP = args[1];
-            int serverPort = Integer.parseInt(args[2]);
-            String multicastIP = args[3];
-            int multicastPort = Integer.parseInt(args[4]);
+            String serverIP = args[0];
+            int serverPort = Integer.parseInt(args[1]);
 
-            /** Connect to main serverSocket, serverSocket.Server and other verifications */
+            /** After Login variables */
+            String locationName = "";
+            String multicastIP = null;
+            int multicastPort = 0;
+            int waitoccurenceport = 0; //just to avoid the error
+            WaitOccurrenceThread waitOccurrenceThread = null;
+
+            /** Connect to main serverSocket, serverSocket.Server */
             Socket mainServerConnection = null;
             try {
                 mainServerConnection = new Socket(serverIP, serverPort);
-                if (!InetAddress.getByName(multicastIP).isMulticastAddress()){
-                    System.err.println("Invalid multicast address: " + multicastIP);
-                    System.exit(-1);
-                }
             } catch (UnknownHostException e) {
                 System.err.println("Don't know about host: " + serverIP);
                 System.exit(-1);
             }
 
-            /** Create Thread for listening to server notifications */
-            WaitOccurrenceThread waitOccurrenceThread = new WaitOccurrenceThread(multicastIP, multicastPort);
-            int waitOccurrencePort = waitOccurrenceThread.getSocketPort();
-
             /** Register and Login into Main Server before anything else */
             try (
-                BufferedReader stdIn = new BufferedReader(new InputStreamReader(System.in));
-                // Input from Server
-                BufferedReader from_server = new BufferedReader(new InputStreamReader(mainServerConnection.getInputStream()));
-                // Output to Server
-                PrintWriter to_server = new PrintWriter(mainServerConnection.getOutputStream());
+                    BufferedReader stdIn = new BufferedReader(new InputStreamReader(System.in));
+                    // Input from Server
+                    BufferedReader from_server = new BufferedReader(new InputStreamReader(mainServerConnection.getInputStream()));
+                    // Output to Server
+                    PrintWriter to_server = new PrintWriter(mainServerConnection.getOutputStream());
             ) {
                 boolean exit = false;
                 String userInput;
                 String serverOutput;
-                System.out.print(CivilProtection.EXIT_INFO + CivilProtection.SERVER_RESPONSE 
-                                    + from_server.readLine() + CivilProtection.CLIENT_MESSAGE);
+                System.out.print(CivilProtection.EXIT_INFO + CivilProtection.SERVER_RESPONSE
+                        + from_server.readLine() + CivilProtection.CLIENT_MESSAGE);
+                // register/login into main server
                 while (!exit && (userInput = stdIn.readLine()) != null) {
                     // terminate communication
-                    if (userInput.equals("exit")) {
+                    if (userInput.equals("%exit")) {
                         System.out.println(CivilProtection.EXIT_WARNING);
                         System.exit(0);
                     } else {
@@ -77,11 +74,7 @@ public class CivilProtection {
                         to_server.println(userInput);
                         // get server output
                         serverOutput = from_server.readLine();
-                        if (serverOutput.equalsIgnoreCase("getport")) {
-                            // send the waitOccurrencePort to enable the server to notify to this Middle-Client
-                            to_server.println(waitOccurrencePort);
-
-                        } else if (serverOutput.equalsIgnoreCase("loggedin")) {
+                        if (serverOutput.equalsIgnoreCase("logged-in")) {
                             System.out.print("\nSuccessfully Logged In. Starting Services ...\n");
                             exit = true;
 
@@ -91,6 +84,19 @@ public class CivilProtection {
                         }
                     }
                 }
+
+                /** Logged In, get server login data */
+                // get multicast IP and PORT  and the Name of this location
+                serverOutput = from_server.readLine();
+                int sep1 = serverOutput.indexOf(":", 0), sep2 = serverOutput.indexOf(":", sep1);
+                locationName = serverOutput.substring(0, sep1);
+                multicastIP = serverOutput.substring(sep1, sep2);
+                multicastPort = Integer.parseInt(serverOutput.substring(sep2, serverOutput.length()));
+                // create thread for listening to server notifications
+                waitOccurrenceThread = new WaitOccurrenceThread(multicastIP, multicastPort);
+                // send the waitOccurrencePort to enable the server to notify to this Middle-Client
+                to_server.println(waitOccurrenceThread.getSocketPort());
+
             } catch (IOException e) {
                 System.err.println("Couldn't get I/O for the connection.");
                 System.exit(-1);
@@ -101,13 +107,13 @@ public class CivilProtection {
 
             /** Wait and Process client connections */
             try (
-                ServerSocket serverSocket = new ServerSocket()
+                    ServerSocket serverSocket = new ServerSocket()
             ) {
                 System.out.println("\nListening on Port " + serverPort + " for Citizen Clients to connect.\n");
                 Socket serverConnection;
                 while (true) {
                     serverConnection = serverSocket.accept();
-                    new MiddleClientCommunicationThread(locationName, serverConnection, mainServerConnection, multicastIP, multicastPort, waitOccurrencePort).start();
+                    new MiddleClientCommunicationThread(locationName, serverConnection, mainServerConnection, multicastIP, multicastPort, waitoccurenceport).start();
                 }
             } catch (IOException e) {
                 System.err.println("Could not listen with ServerSocket!");

@@ -1,5 +1,10 @@
 package server;
 
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import middle_client.ClientUserModel;
+
 import java.util.ArrayList;
 import java.util.Iterator;
 
@@ -8,11 +13,11 @@ import java.util.Iterator;
  */
 public class UserTracking {
 
-    private ArrayList<String> registeredUsers; // ficheiro
+    private ArrayList<MiddleClientModel> registeredClients; // ficheiro
     private ArrayList<String> loggedUsers;
 
     UserTracking() {
-        registeredUsers = new ArrayList<>();
+        registeredClients = new ArrayList<>();
         loggedUsers = new ArrayList<>();
     }
 
@@ -39,4 +44,28 @@ public class UserTracking {
     public Iterator<String> getLoggedUsers() {
         return loggedUsers.iterator();
     }
+
+    public synchronized boolean addRegisteredMC(JsonObject client) {
+        MiddleClientModel mcm = new MiddleClientModel(client.get("middleclientip").getAsString(), client.get("multicastip").getAsString(),
+                client.get("serverport").getAsInt(), client.get("multicastport").getAsInt(), client.get("waitingport").getAsInt());
+        return registeredClients.add(mcm);
+    }
+
+    //percorrer para ler o ficheiro
+    public synchronized void setRegisteredUsers(JsonElement file){
+        JsonArray clients
+                = (file != null && file.isJsonArray()
+                ? file.getAsJsonArray() : new JsonArray());
+        if (clients != null) {
+            int len = clients.size();
+            for (int i=0;i<len;i++){
+                JsonObject client = clients.get(i).getAsJsonObject();
+                MiddleClientModel cum = new MiddleClientModel(client.get("middleclientip").getAsString(), client.get("multicastip").getAsString(),
+                        client.get("serverport").getAsInt(), client.get("multicastport").getAsInt(), client.get("waitingport").getAsInt());
+                registeredClients.add(cum);
+            }
+        }
+
+    }
+
 }

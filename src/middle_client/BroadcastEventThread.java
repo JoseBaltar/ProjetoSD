@@ -6,8 +6,8 @@ import java.util.concurrent.Semaphore;
 
 /**
  * Abre uma janela que imprime notificações de catástrofes relativas ao Cliente.
- * 
- * TODO fazer um "event tracker" e uma forma de "acabar o evento" (pode ser através de um botão numa janela)
+ *
+ * TODO fazer um "event tracker" e uma forma de "acabar o evento" (pode ser através de um botão numa janela) (isto deveria estar no SharedObject "ClientCommunicationTracking")
  */
 public class BroadcastEventThread extends Thread{
 

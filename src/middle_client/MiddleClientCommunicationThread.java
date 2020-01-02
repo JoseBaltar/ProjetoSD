@@ -15,15 +15,16 @@ public class MiddleClientCommunicationThread extends Thread {
 
     private Socket clientConnection;
     private Socket serverConnection;
+    UserTracking userTracking;
 
     private String multicastIPAdress;
     private int multicastPort;
     private int waitOcurrencePort;
-    
+
     private ClientLoginProtocol login_protocol;
     private EventNotificationProtocol notification_protocol;
 
-    MiddleClientCommunicationThread(String locationName, Socket serverConnection, Socket clientConnection, 
+    MiddleClientCommunicationThread(String locationName, Socket serverConnection, Socket clientConnection,
                         String multicastIPAddress, int multicastPort, int waitOcurrencePort) {
         super();
         this.clientConnection = clientConnection;
@@ -33,7 +34,7 @@ public class MiddleClientCommunicationThread extends Thread {
         this.multicastPort = multicastPort;
         this.waitOcurrencePort = waitOcurrencePort;
 
-        this.login_protocol = new ClientLoginProtocol(locationName);
+        this.login_protocol = new ClientLoginProtocol(locationName, userTracking);
         this.notification_protocol = new EventNotificationProtocol();
     }
 
@@ -92,10 +93,10 @@ public class MiddleClientCommunicationThread extends Thread {
 
                         // NOTA: esta parte poderia estar a ser feita pelo protocolo. Só não tenho a certeza disso ainda.
                         // processed = notification_protocol.processInput(clientInp);
-                        // Mas parece pouca coisa para criar um protocolo só para isto. 
+                        // Mas parece pouca coisa para criar um protocolo só para isto.
                         // Pode-me estar a falhar alguma coisa no entanto.
 
-                        /** Process server output 
+                        /** Process server output
                          * - a string representing an array of strings separated by ","
                          * with all response details
                          */
@@ -117,17 +118,17 @@ public class MiddleClientCommunicationThread extends Thread {
 
                         } else {
                             /**
-                             * New Event, nothing else is needed, 
+                             * New Event, nothing else is needed,
                              * though something has to be returned to the client still
                              */
                             out_cli.println("Request sent and processed successfully!");
-                    
+
                         }
                     }
                 }
             }
-            
-            System.out.println("-------------\nService terminated on Client " 
+
+            System.out.println("-------------\nService terminated on Client "
                     + clientConnection.getInetAddress() + "!");
         } catch (IOException e) {
             e.printStackTrace();
