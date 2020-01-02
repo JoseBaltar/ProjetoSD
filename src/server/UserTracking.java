@@ -3,7 +3,6 @@ package server;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import middle_client.ClientUserModel;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -47,7 +46,7 @@ public class UserTracking {
 
     public synchronized boolean addRegisteredMC(JsonObject client) {
         MiddleClientModel mcm = new MiddleClientModel(client.get("middleclientip").getAsString(), client.get("multicastip").getAsString(),
-                client.get("serverport").getAsInt(), client.get("multicastport").getAsInt(), client.get("waitingport").getAsInt());
+                client.get("password").getAsString(), client.get("serverport").getAsInt(), client.get("multicastport").getAsInt(), client.get("waitingport").getAsInt());
         return registeredClients.add(mcm);
     }
 
@@ -60,9 +59,9 @@ public class UserTracking {
             int len = clients.size();
             for (int i=0;i<len;i++){
                 JsonObject client = clients.get(i).getAsJsonObject();
-                MiddleClientModel cum = new MiddleClientModel(client.get("middleclientip").getAsString(), client.get("multicastip").getAsString(),
-                        client.get("serverport").getAsInt(), client.get("multicastport").getAsInt(), client.get("waitingport").getAsInt());
-                registeredClients.add(cum);
+                MiddleClientModel mcm = new MiddleClientModel(client.get("middleclientip").getAsString(), client.get("multicastip").getAsString(),
+                        client.get("password").getAsString(), client.get("serverport").getAsInt(), client.get("multicastport").getAsInt(), client.get("waitingport").getAsInt());
+                registeredClients.add(mcm);
             }
         }
 

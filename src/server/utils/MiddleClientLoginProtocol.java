@@ -19,7 +19,7 @@ public class MiddleClientLoginProtocol {
 
     private MainStates main_state = MainStates.DUMMY;
     private SecStates sec_state = SecStates.NOT_DEFINED;
-    private String middleclientip, multicastip;
+    private String middleclientip, multicastip, password;
     private int serverport, multicastport, waitingport;
     private UserTracking tracking;
 
@@ -67,11 +67,10 @@ public class MiddleClientLoginProtocol {
         JsonObject client = new JsonObject();
         client.addProperty("middleclientip",middleclientip);
         client.addProperty("multicastip", multicastip);
+        client.addProperty("password", password);
         client.addProperty("serverport", serverport);
         client.addProperty("multicastport", multicastport);
         client.addProperty("waitingport", waitingport);
-
-
 
         tracking.addRegisteredMC(client);
         clientes.add(client);

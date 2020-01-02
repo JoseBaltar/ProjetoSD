@@ -2,12 +2,13 @@ package server;
 
 public class MiddleClientModel {
 
-    private String middleclientip, multicastip;
+    private String middleclientip, multicastip, password;
     private int serverport, multicastport, waitingport;
 
-    public MiddleClientModel(String middleclientip, String multicastip, int serverport, int multicastport, int waitingport) {
+    public MiddleClientModel(String middleclientip, String multicastip, String password, int serverport, int multicastport, int waitingport) {
         this.middleclientip = middleclientip;
         this.multicastip = multicastip;
+        this.password = password;
         this.serverport = serverport;
         this.multicastport = multicastport;
         this.waitingport = waitingport;
@@ -31,5 +32,9 @@ public class MiddleClientModel {
 
     public int getWaitingport() {
         return waitingport;
+    }
+
+    public String getPassword() {
+        return password;
     }
 }
