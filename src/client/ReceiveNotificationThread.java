@@ -3,11 +3,17 @@ package client;
 import java.io.*;
 import java.net.*;
 
+/**
+ * 
+ */
 public class ReceiveNotificationThread extends Thread {
 
     protected String multicastSocketIP;
     protected int port;
 
+    /**
+     * 
+     */
     ReceiveNotificationThread(String multicastIP, int port) {
         super();
         this.multicastSocketIP = multicastIP;
@@ -32,7 +38,7 @@ public class ReceiveNotificationThread extends Thread {
                 socket.receive(packet); // wait for packet from server
 
                 String received = new String(packet.getData(), 0, packet.getLength());
-                System.out.println("Notification: " + received); // Output notification (fazer uma janela no swing)
+                System.out.println("Notification: " + received); // TODO Output notification (fazer uma janela no swing)
             }
 
             socket.leaveGroup(address);

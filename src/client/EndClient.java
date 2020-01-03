@@ -9,13 +9,16 @@ import java.net.*;
  * - UDP, fica à espera de receber notificações (aberto depois do registo e
  *out no Middle-Client)<br/>
  */
-public class Citizen {
-    private static final String EXIT_INFO = "-------------\nTo close the connection write '%quit'.\n-------------\n";
-    private static final String LOGOUT_INFO = "-------------\nTo logout from this server write '%logout'.\n-------------\n";
-    private static final String EXIT_WARNING = "\n-----\nConnection terminated!\n-----\n";
-    private static final String ASK_SERVER_INFO = "-------------\nCheck the Server connections list to get IP and Port Information.\n-------------\n";
+public class EndClient {
+    private static final String SEP = "\n----------\n";
+    private static final String LOGOUT_INFO = SEP + "To logout from this server write '%logout'." + SEP;
+    private static final String EXIT_INFO = SEP + "To close the connection write '%quit'." + SEP;
+    private static final String EXIT_WARNING = SEP + "Connection terminated!" + SEP;
+
+    private static final String ASK_SERVER_INFO = SEP + "Check the Server connections list to get IP and Port Information." + SEP;
     private static final String ASK_SERVER_IP = "Enter Location Server IP:\n> ";
     private static final String ASK_SERVER_PORT = "Enter Location Server Port:\n> ";
+
     private static final String CLIENT_MESSAGE = "\nClient: ";
     private static final String SERVER_RESPONSE = "Server: ";
 
@@ -28,18 +31,17 @@ public class Citizen {
         String userInput;
         String serverOutput;
 
-        boolean quit = false;
+        boolean quit = false, exit = false;
         int separator;
 
         String multicastIP;
         int multicastPort;
         Thread notificationThread = null;
-        try (
-            BufferedReader stdIn = new BufferedReader(new InputStreamReader(System.in));
-        ) {
 
-            /** Input which Location Server to connect */
-            while (true) {
+        BufferedReader stdIn = new BufferedReader(new InputStreamReader(System.in));
+        while (!exit) {
+            try {
+                /** Input which Location Server to connect */
                 System.out.print(ASK_SERVER_INFO + ASK_SERVER_IP);
                 serverIP = stdIn.readLine();
                 System.out.print(ASK_SERVER_PORT);
@@ -67,7 +69,7 @@ public class Citizen {
                             if ((serverOutput = from_server.readLine()).equalsIgnoreCase("logged-in")) {
 
                                 /** Start communication between Logged Client and Middle-Client Server */
-                                System.out.print("\nSuccessfully Logged In. Starting Notification Services ...\n");
+                                System.out.print(SERVER_RESPONSE + from_server.readLine());
                                 
                                 // Open thread for processing occurrence warnings
                                 serverOutput = from_server.readLine(); // get extra information from server
@@ -105,20 +107,20 @@ public class Citizen {
 
                 } catch (UnknownHostException e) {
                     System.err.println("Don't know about host: " + serverIP);
-                    System.exit(-1);
                 } catch (IOException e) {
                     System.err.println("Couldn't get I/O for the connection.");
-                    System.exit(-1);
                 } finally {
                     if (notificationThread != null) notificationThread.interrupt();
                 }
 
-            } /** change location cicle */
+            } catch (IOException e) {
+                System.err.println("Error reading from System.in!");
+                exit = true;
+            } catch (NumberFormatException e) {
+                System.err.println("Server Port must be a valid Integer!");
+            }
 
-        } catch (IOException e) {
-            System.err.println("Error reading from System.in!");
-        } catch (NumberFormatException e) {
-            System.err.println("Server Port must be a valid Integer!");
-        }
+        } /** change location cicle */ 
+        stdIn.close();
     }
 }

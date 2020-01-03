@@ -14,20 +14,21 @@ import java.net.*;
  * - Se o evento é novo, abre um socket de comunicação de relatorios com o servidor (UDP) <br/>
  * - Se o evento ja esta ativo (evento na mesma localização, com o mesmo grau) nao faz uma nova conexão <bt/>
  */
-public class CivilProtection {
-    private static final String EXIT_INFO = "-------------\nTo close the connection to server write '%quit'.\n-------------\n";
-    private static final String EXIT_WARNING = "\n-----\nConnection with Server terminated!\n-----\n";
+public class MiddleClient {
+    private static final String SEP = "\n----------\n";
+    private static final String EXIT_INFO = SEP + "To close the connection to server write '%quit'." + SEP;
+    private static final String EXIT_WARNING = SEP + "Connection with Server terminated!" + SEP;
     private static final String CLIENT_MESSAGE = "\nClient: ";
     private static final String SERVER_RESPONSE = "Server: ";
 
     public static void main(String[] args) throws IOException {
         /** Check arguments */
         if (args.length != 2) {
-            System.out.println("Wrong Arguments!\n\nUsage:\n\t" 
-                + "java middle_client.CivilProtection <main_server_ip> <main_server_port>");
+            System.out.println("\nWrong Arguments!\nUsage:\n\t" 
+                + "java middle_client.MiddleClient <main_server_ip> <main_server_port>");
         } else if (!args[1].matches("\\d+")) {
-            System.out.println("Wrong Arguments! Make sure <serverPort> is a valid integer.\n\nUsage:\n\t" 
-                + "java middle_client.CivilProtection <main_server_ip> <main_server_port>");
+            System.out.println("\nWrong Arguments! Make sure <serverPort> is a valid integer.\nUsage:\n\t" 
+                + "java middle_client.MiddleClient <main_server_ip> <main_server_port>");
         } else {
 
             /** Argument variables */
