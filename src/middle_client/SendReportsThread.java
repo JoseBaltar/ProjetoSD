@@ -36,7 +36,7 @@ public class SendReportsThread extends Thread {
         return eventModel;
     }
 
-    public synchronized void LogReport(){
+  /*  public synchronized void LogReport(){
         Logger logger = Logger.getLogger("EventLog"+ eventModel.getId());
         FileHandler fh;
 
@@ -54,8 +54,17 @@ public class SendReportsThread extends Thread {
         } catch (IOException | SecurityException ex) {
 
         }
-    }
+    } */
 
+
+  private String logInformation(){
+      float currentelapsedtime = System.nanoTime() - eventModel.getInitime();
+      return "Name: "+eventModel.getName() + ", ID:" + eventModel.getId() + ", Identified personel: "+eventModel.getNotifiedcount() + " Current Time: "+ currentelapsedtime;
+  }
+
+  private String finalLogInfo(){
+      return logInformation()+", Status: Concluded, !";
+  }
 
     @Override
     public void run() {
@@ -65,5 +74,25 @@ public class SendReportsThread extends Thread {
          * 
          * TODO
          */
+      while(!Thread.interrupted())
+        try {
+            Thread.sleep(30000);
+            byte[] buf;
+            buf = logInformation().getBytes();
+            DatagramPacket packet = new DatagramPacket(buf, buf.length, serverAddress, serverPort);
+            socket.send(packet);
+        } catch (InterruptedException | IOException e) {
+            e.printStackTrace();
+        }
+
+        byte[] buf;
+        buf = finalLogInfo().getBytes();
+        DatagramPacket packet = new DatagramPacket(buf, buf.length, serverAddress, serverPort);
+        try {
+            socket.send(packet);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
     }
 }

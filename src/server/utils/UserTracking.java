@@ -13,11 +13,13 @@ import java.util.Iterator;
 public class UserTracking {
 
     private ArrayList<MiddleClientModel> registeredClients; // ficheiro
+    private ArrayList<String> loggedLocations;
     private ArrayList<String> loggedUsers;
 
     UserTracking() {
         registeredClients = new ArrayList<>();
         loggedUsers = new ArrayList<>();
+        loggedLocations = new ArrayList<>();
     }
 
     /**
@@ -43,6 +45,10 @@ public class UserTracking {
     public Iterator<String> getLoggedUsers() {
         return loggedUsers.iterator();
     }
+
+    public synchronized boolean loginLocation(String location){ return loggedLocations.add(location);}
+    public synchronized boolean logooutLocation(String location){return loggedLocations.remove(location);}
+    public Iterator<String> getLoggedLocations(){return loggedLocations.iterator();}
 
     public synchronized boolean addRegisteredMC(JsonObject client) {
         MiddleClientModel mcm = new MiddleClientModel(client.get("middleclientip").getAsString(), client.get("multicastip").getAsString(),
