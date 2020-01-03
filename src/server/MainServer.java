@@ -4,7 +4,7 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 
-import server.utils.ClientConnectionTracking;
+import server.utils.ConnectionsTracking;
 
 /**
  * Espera na porta especificada e lança threads para comunicação com o Cliente Intermédio
@@ -17,7 +17,7 @@ public class MainServer {
     public static void main(String[] args) throws IOException {
 
         /** Wait and Process client connections. */
-        ClientConnectionTracking shared = new ClientConnectionTracking();
+        ConnectionsTracking connectionsTracking = new ConnectionsTracking();
         try (
             ServerSocket serverSocket = new ServerSocket(0)
         ) {
@@ -25,8 +25,8 @@ public class MainServer {
             Socket clientSocket;
             while (true) {
                 clientSocket = serverSocket.accept();
-                new ServerCommunicationThread(clientSocket, shared).start();
-                System.out.print(CLIENT_CONNECTED + clientSocket.getInetAddress() + SEP);
+                new ServerCommunicationThread(clientSocket, connectionsTracking).start();
+                System.out.print(CLIENT_CONNECTED + clientSocket.getInetAddress() + "; PORT: " + clientSocket.getPort() + SEP);
             }
         } catch (IOException e) {
             System.err.println("Could not listen with ServerSocket!");

@@ -1,13 +1,10 @@
 package server;
 
 import java.io.*;
-import java.net.DatagramSocket;
 import java.net.Socket;
-import java.net.SocketException;
 
+import server.utils.ConnectionsTracking;
 import server.utils.MiddleClientLoginProtocol;
-import server.utils.ServerEventNotificationProtocol;
-import server.utils.ClientConnectionTracking;
 
 /**
  * Disponibiliza um meio de comunicação com o Cliente Intermédio através de um Protocolo.
@@ -18,16 +15,14 @@ public class ServerCommunicationThread extends Thread {
 
     private Socket clientConnection;
 
-    private ClientConnectionTracking sharedConnTracking;
+    // private ConnectionsTracking connectionsTracking;
     private MiddleClientLoginProtocol login_protocol;
-    private ServerEventNotificationProtocol notification_protocol;
 
-    ServerCommunicationThread(Socket clientConnection, ClientConnectionTracking sharedConnTracking) {
+    ServerCommunicationThread(Socket clientConnection, ConnectionsTracking connectionsTracking) {
         super();
         this.clientConnection = clientConnection;
-        this.sharedConnTracking = sharedConnTracking;
-        this.login_protocol = new MiddleClientLoginProtocol(sharedConnTracking);
-        this.notification_protocol = new ServerEventNotificationProtocol();
+        // this.connectionsTracking = connectionsTracking;
+        this.login_protocol = new MiddleClientLoginProtocol(connectionsTracking);
     }
 
     @Override
@@ -36,14 +31,14 @@ public class ServerCommunicationThread extends Thread {
         // Input from Client
         BufferedReader in = new BufferedReader(new InputStreamReader(clientConnection.getInputStream()));
         // Output to Client
-        PrintWriter out = new PrintWriter(clientConnection.getOutputStream());
+        PrintWriter out = new PrintWriter(clientConnection.getOutputStream(), true);
         ) {
 
             boolean quit = false;
             String clientInp, processed;
 
             String[] locations;
-            String event, ip; int port;
+            String event, ip, clientUsername; int port;
 
             /** Register and Login Middle-Client */
             out.println(login_protocol.processInput(""));
@@ -60,7 +55,8 @@ public class ServerCommunicationThread extends Thread {
                         /** Middle-Client Logged-In */
                         out.println(processed);
                         // send locationName, multicast IP and Port to middle-client+
-                        out.println(login_protocol.getLocationName() + ":" + login_protocol.getMulticastIP() + ":" + login_protocol.getMulticastPort());
+                        out.println(login_protocol.getLocationName() + ":230.0.0.1/6000");
+                        // out.println(login_protocol.getLocationName() + ":" + login_protocol.getMulticastAddress());
                         // get extra information from middle-client, about listening socket port, to enable sending occurence notifications
                         login_protocol.processInput(in.readLine()); // GET_CLIENT_LISTENING_PORT main_state no protocolo
 
@@ -68,14 +64,19 @@ public class ServerCommunicationThread extends Thread {
                         while ((clientInp = in.readLine()) != null) {
 
                             if (clientInp.startsWith("%login")) {
+                                clientUsername = clientInp.substring(clientInp.indexOf(":") + 1);
                                 /** When a client logs in into this Location, save it into shared object */
+                                System.out.println("\n\nTEST: receive login notification from Middle-Client, check. Username: " + clientUsername);
 
                             } else if (clientInp.startsWith("%logout")) {
+                                clientUsername = clientInp.substring(clientInp.indexOf(":") + 1);
                                 /** When a client logs out from this Location, update shared object */
+                                System.out.println("\n\nTEST: receive logout notification from Middle-Client, check. Username: " + clientUsername);
 
                             } else {
                                 /** Process notification sent by client: locations:ocurrence-degree:description */
                                 processed = processEvent(clientInp);
+                                System.out.println("\n\nTEST: receive event notification from Middle-Client, check. Notification: " + clientInp);
                                 // the method return one of the following: in-progress or create-event
                                 if (processed.startsWith("create-event")) {
                                     /** Execute server actions on a new event */
@@ -86,7 +87,7 @@ public class ServerCommunicationThread extends Thread {
                                     System.out.println("\n-----------\nSending Event Notification to all Locations ...");
                                     for (String location : locations) {
                                         // start the UDP socket connection thread for receiving reports
-                                        ReceiveReportsThread thread = new ReceiveReportsThread(sharedConnTracking);
+                                        ReceiveReportsThread thread = new ReceiveReportsThread();
                                         thread.start();
                                         // notify client
                                         ip = location.substring(0, location.indexOf(","));
@@ -106,7 +107,7 @@ public class ServerCommunicationThread extends Thread {
             } /** client login cicle */
         
         } catch (IOException e) {
-            e.printStackTrace();
+            System.out.println("Client disconnected! Terminating ... ");
         }
     }
 

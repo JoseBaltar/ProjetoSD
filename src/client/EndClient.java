@@ -11,13 +11,14 @@ import java.net.*;
  */
 public class EndClient {
     private static final String SEP = "\n----------\n";
-    private static final String LOGOUT_INFO = SEP + "To logout from this server write '%logout'." + SEP;
-    private static final String EXIT_INFO = SEP + "To close the connection write '%quit'." + SEP;
+    private static final String LOGOUT_INFO = SEP + "NOTICE: To logout from this server write '%logout'." + SEP;
+    private static final String EXIT_INFO = SEP + "NOTICE: To close the connection write '%quit'." + SEP;
     private static final String EXIT_WARNING = SEP + "Connection terminated!" + SEP;
 
-    private static final String ASK_SERVER_INFO = SEP + "Check the Server connections list to get IP and Port Information." + SEP;
+    private static final String ASK_SERVER_INFO = SEP + "NOTICE: Check the Server connections list to get IP and Port Information." + SEP;
     private static final String ASK_SERVER_IP = "Enter Location Server IP:\n> ";
     private static final String ASK_SERVER_PORT = "Enter Location Server Port:\n> ";
+    private static final String SENT_NOTIFICATION = SEP + "Notification sent Successfully!" + SEP;
 
     private static final String CLIENT_MESSAGE = "\nClient: ";
     private static final String SERVER_RESPONSE = "Server: ";
@@ -66,16 +67,19 @@ public class EndClient {
                         } else {
                             // send input to server
                             to_server.println(userInput);
-                            if ((serverOutput = from_server.readLine()).equalsIgnoreCase("logged-in")) {
+
+                            // get server response
+                            serverOutput = from_server.readLine();
+                            if (serverOutput.equalsIgnoreCase("logged-in")) {
 
                                 /** Start communication between Logged Client and Middle-Client Server */
-                                System.out.print(SERVER_RESPONSE + from_server.readLine());
+                                System.out.println(SERVER_RESPONSE + from_server.readLine());
                                 
                                 // Open thread for processing occurrence warnings
                                 serverOutput = from_server.readLine(); // get extra information from server
-                                separator = serverOutput.indexOf(":", 0);
+                                separator = serverOutput.indexOf("/");
                                 multicastIP = serverOutput.substring(0, separator);
-                                multicastPort = Integer.parseInt(serverOutput.substring(separator, serverOutput.length()));
+                                multicastPort = Integer.parseInt(serverOutput.substring(separator + 1));
                                 notificationThread = new ReceiveNotificationThread(multicastIP, multicastPort);
                                 notificationThread.start();
 
@@ -85,14 +89,22 @@ public class EndClient {
                                     // terminate communication
                                     if (userInput.equals("%logout")) {
                                         to_server.println(userInput);
-                                        System.out.println(from_server.readLine() + EXIT_WARNING);
+                                        System.out.print(from_server.readLine() + EXIT_WARNING);
                                         quit = true;
 
                                     } else {
                                         // send input to server
                                         to_server.println(userInput);
-                                        // print server response
-                                        System.out.print(SERVER_RESPONSE + from_server.readLine() + CLIENT_MESSAGE);
+
+                                        // get server response
+                                        serverOutput = from_server.readLine();
+                                        if (serverOutput.equalsIgnoreCase("processed")) {
+                                            // notification sent successfully, read new server line
+                                            System.out.print(SENT_NOTIFICATION + SERVER_RESPONSE + from_server.readLine() + CLIENT_MESSAGE);
+                                        } else {
+                                            // print server response
+                                            System.out.print(SERVER_RESPONSE + serverOutput + CLIENT_MESSAGE);
+                                        }
                                     }
 
                                 } /** notifications to server cicle */

@@ -21,6 +21,7 @@ public class ClientLoginProtocol {
     private String location; /** Location name of the Server using an instance of this Protocol */
     private String username = ""; /** Client username input */
     private String password = ""; /** Client password input */
+    private String registeredUsername; /** Username of a registered Client - used for verification */
     private boolean dummy = false;
 
     public ClientLoginProtocol(String location) {
@@ -41,7 +42,7 @@ public class ClientLoginProtocol {
 
         if (main_state == MainStates.CHECK_LOGIN) {
             if (sec_state == SecStates.GET_USERNAME) {
-                if (!theInput.isEmpty()) {
+                if (theInput.isEmpty()) {
                     theOutput = "Invalid Username! Enter your username.";
                 } else if (/* theInput does not exist in registered users */dummy) {
                     theOutput = "Client is not registered, want to register? Type %register, or enter a new username.";
@@ -55,16 +56,6 @@ public class ClientLoginProtocol {
                 if (/* password incorrect */dummy) {
                     theOutput = "Password is incorrect. Retype password or write %cancel to change username.";
                 } else {
-                    theOutput = "findUserLogin:" + username;
-                    sec_state = SecStates.GET_SERVER_DATA;
-                }
-            } else if (sec_state == SecStates.GET_SERVER_DATA) {
-                if (theInput.startsWith("true")) {
-                    /** User has a login in another location */
-                    theOutput = "You are already logged-in in " + theInput.substring(theInput.indexOf(":"))
-                                    + ". Please logout or try another account.";
-                    sec_state = SecStates.GET_USERNAME;
-                } else {
 
                     /**
                      * TODO Login User (adicionar user a um objeto partilhado entre threads, com os clientes de login efetuado)
@@ -72,7 +63,26 @@ public class ClientLoginProtocol {
 
                     theOutput = "logged-in"; // key-word for sinalizing login in communication thread
                     main_state = MainStates.LOGGED;
+
+                    /* Removido uma vez que InputStream do Main-Server já não existe. Explicação no relatório.
+                    theOutput = "findUserLogin:" + username;
+                    sec_state = SecStates.GET_SERVER_DATA;
+                    */
                 }
+            /* } else if (sec_state == SecStates.GET_SERVER_DATA) {
+                if (theInput.startsWith("true")) {
+                    /** User has a login in another location /
+                    theOutput = "You are already logged-in in " + theInput.substring(theInput.indexOf(":"))
+                                    + ". Please logout or try another account.";
+                    sec_state = SecStates.GET_USERNAME;
+                } else {
+
+                    // Login User to Data Structure
+
+                    theOutput = "logged-in"; // key-word for sinalizing login in communication thread
+                    main_state = MainStates.LOGGED;
+                } 
+            */
             } else {
                 theOutput = "Greetings from " + location + "! Enter your Username. (To register a user type %register!)";
                 sec_state = SecStates.GET_USERNAME;
@@ -80,17 +90,18 @@ public class ClientLoginProtocol {
 
         } else if (main_state == MainStates.REGISTER_CLIENT) {
             if (sec_state == SecStates.GET_USERNAME) {
-                if (theInput.length() < 3 && theInput.length() > 30) {
+                if (theInput.length() < 3 || theInput.length() > 30) {
                     theOutput = "Username must be within 3 and 30 characters. Enter a Username.";
                 } else if (/* theInput exists in registered users */dummy) {
                     theOutput = "Client already exists. Write a new username or %cancel to go back to Login!";
                 } else {
                     // User is new
+                    registeredUsername = theInput;
                     theOutput = "Enter password.";
                     sec_state = SecStates.GET_PASSWORD;
                 }
             } else if (sec_state == SecStates.GET_PASSWORD) {
-                if (theInput.length() < 4 && theInput.length() > 16) {
+                if (theInput.length() < 4 || theInput.length() > 16) {
                     theOutput = "Password must be within 4 and 16 characters. Retype password or write %cancel to change username.";
                 } else {
                     /*
@@ -102,16 +113,18 @@ public class ClientLoginProtocol {
                 }
             } else if (sec_state == SecStates.RETYPE_PASSWORD) {
                 if (!password.equals(theInput)) {
-                    theOutput = "Passwords do not match, restart registration. Enter a Username. (Type %cancel to go back to Login page!)";
-                    sec_state = SecStates.GET_USERNAME;
+                    theOutput = "Passwords do not match, rewrite password or type %register to restart registration or %cancel to go back to Login page!";
+                    sec_state = SecStates.GET_PASSWORD;
                     password = "";
                 } else {
 
                     /** 
                      * TODO Register Client (adicionar user à base de dados de ficheiros)
                      */
-
+                    
+                    theOutput = "User " + registeredUsername + ", registered successfully! Back to Login. Enter a Username.";
                     main_state = MainStates.CHECK_LOGIN;
+                    sec_state = SecStates.GET_USERNAME;
                 }
             } else {
                 theOutput = "Welcome to the Registration Page! Enter a Username. (To go back to Login page type %cancel!)";

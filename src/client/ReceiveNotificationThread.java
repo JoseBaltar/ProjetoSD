@@ -38,6 +38,8 @@ public class ReceiveNotificationThread extends Thread {
                 socket.receive(packet); // wait for packet from server
 
                 String received = new String(packet.getData(), 0, packet.getLength());
+                // String eventName = received.substring(0, received.indexOf(","));
+                // int eventSeverity = Integer.parseInt(received.substring(received.indexOf(",")));
                 System.out.println("Notification: " + received); // TODO Output notification (fazer uma janela no swing)
             }
 

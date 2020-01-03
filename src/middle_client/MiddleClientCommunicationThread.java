@@ -4,7 +4,8 @@ import java.io.*;
 import java.net.*;
 
 import middle_client.utils.ClientLoginProtocol;
-import middle_client.utils.EventNotificationProtocol;
+import middle_client.utils.NotificationProtocol;
+import middle_client.utils.EventTracking;
 
 /**
  * Registo e Login <br/>
@@ -12,20 +13,23 @@ import middle_client.utils.EventNotificationProtocol;
  * Abre threads relativas a um evento decorrente.
  */
 public class MiddleClientCommunicationThread extends Thread {
-    private static String DISPLAY = "\nMiddle-Client: ";
+    private String DISPLAY = "\nMiddle-Client: ";
+    private static final String SEP = "\n----------\n";
     private static final String LOGIN_CANCEL = "Client canceled the login. Terminating connection ...";
     private static final String LOGIN = "Client Logged In!";
+    private static final String PROCESSING = "Processing and Redirecting End-Client event notifications ...";
     private static final String LOGOUT = "Successfully Logged Out. Terminating connection ...";
-    private static final String SENT_NOTIFICATION = "Notification sent Successfully!"; // don't write \n or \r into this string
 
     private Socket clientConnection;
-    private Socket mainServerConnection;
+    private PrintWriter outMainServer;
 
-    private String multicastIPAdress;
+    private String multicastIPAddress;
     private int multicastPort;
+
+    private EventTracking eventTracking;
     
     private ClientLoginProtocol login_protocol;
-    private EventNotificationProtocol notification_protocol;
+    private NotificationProtocol notification_protocol;
 
     /**
      * @param locationName Location name relative to this Middle-Client
@@ -34,18 +38,20 @@ public class MiddleClientCommunicationThread extends Thread {
      * @param multicastIPAddress This Location, Middle-Client, respective multicastIP address
      * @param multicastPort This Location, Middle-Client, respective multicast address PORT
      */
-    MiddleClientCommunicationThread(String locationName, Socket clientConnection, Socket mainServerConnection, 
-                        String multicastIPAddress, int multicastPort) {
+    MiddleClientCommunicationThread(String locationName, Socket clientConnection, PrintWriter outMainServer, 
+                        String multicastIPAddress, int multicastPort, EventTracking eventTracking) {
         super();
         this.clientConnection = clientConnection;
-        this.mainServerConnection = mainServerConnection;
-        this.DISPLAY = "\n" + clientConnection.getInetAddress() + " - Middle-Client: ";
+        this.outMainServer = outMainServer;
+        this.DISPLAY = "Middle-Client | Client" + clientConnection.getInetAddress() + ":" + clientConnection.getLocalPort() + ": ";
 
-        this.multicastIPAdress = multicastIPAddress;
+        this.multicastIPAddress = multicastIPAddress;
         this.multicastPort = multicastPort;
 
+        this.eventTracking = eventTracking;
+
         this.login_protocol = new ClientLoginProtocol(locationName);
-        this.notification_protocol = new EventNotificationProtocol();
+        this.notification_protocol = new NotificationProtocol();
     }
 
     public void run() {
@@ -53,16 +59,11 @@ public class MiddleClientCommunicationThread extends Thread {
         // Input from Client
         BufferedReader in_cli = new BufferedReader(new InputStreamReader(clientConnection.getInputStream()));
         // Output to Client
-        PrintWriter out_cli = new PrintWriter(clientConnection.getOutputStream());
-        // Output to Server
-        PrintWriter out_srv = new PrintWriter(mainServerConnection.getOutputStream());
-        // Input from Server shouldn't exist because mainServerConnection is shared by every End-Client Thread
-        // Various synchronization problems would arise using this InputStream.
+        PrintWriter out_cli = new PrintWriter(clientConnection.getOutputStream(), true);
         ) {
             /** Register and Login End-Client */
             boolean quit = false;
             String clientInp, processed;
-            String[] response;
 
             out_cli.println(login_protocol.processInput("")); // send first message to Client
             while (!quit && (clientInp = in_cli.readLine()) != null) {
@@ -76,23 +77,25 @@ public class MiddleClientCommunicationThread extends Thread {
 
                     if (processed.equalsIgnoreCase("logged-in")) {
                         out_cli.println(processed);
-                        System.out.println(DISPLAY + LOGIN);
+                        System.out.println(SEP + DISPLAY + LOGIN);
+                        out_cli.println(LOGIN);
                         // send extra information to client, about the multicast connection
-                        out_cli.println(multicastIPAdress + ":" + multicastPort);
+                        out_cli.println(multicastIPAddress + "/" + multicastPort);
                         // notify server of client login on this location
-                        out_srv.println("%login:" + login_protocol.getLoginUsername());
+                        outMainServer.println("%login:" + login_protocol.getLoginUsername());
                         
                         /** Client Logged-In, start receiving event notifications */
+                        System.out.println(DISPLAY + PROCESSING);
                         out_cli.println(notification_protocol.processInput(""));
                         while (!quit && (clientInp = in_cli.readLine()) != null) {
 
                             if (clientInp.equalsIgnoreCase("%logout")) {
                                 /** Check if client logged out. Stop communication with this server */
                                 // notify server of client logout on this location
-                                out_srv.println("%logout:" + login_protocol.getLoginUsername());
+                                outMainServer.println("%logout:" + login_protocol.getLoginUsername());
                                 // notify client of successfull logout
                                 out_cli.println(LOGOUT);
-                                System.out.println(DISPLAY + LOGOUT);
+                                System.out.println(DISPLAY + LOGOUT + SEP);
                                 quit = true;
 
                             } else {
@@ -100,9 +103,11 @@ public class MiddleClientCommunicationThread extends Thread {
                                 
                                 if (processed.equalsIgnoreCase("processed")) {
                                     // redirect event notification into main server
-                                    out_srv.println(notification_protocol.processInput(""));
+                                    outMainServer.println(notification_protocol.processInput(""));
                                     // notify client about sent notification
-                                    out_cli.println(SENT_NOTIFICATION);
+                                    out_cli.println(processed);
+                                    // restart notification sending communication
+                                    out_cli.println(notification_protocol.processInput(""));
                                 } else {
                                     out_cli.println(processed);
                                 }
@@ -118,42 +123,13 @@ public class MiddleClientCommunicationThread extends Thread {
 
             } /** client login cicle */
             
-            System.out.println("-------------\nService terminated on Client " + clientConnection.getInetAddress() + "!");
+            System.out.println("\n==========\nService terminated on\n\tClient: " + login_protocol.getLoginUsername() 
+                            + "\n\tIP: " + clientConnection.getInetAddress() + "!\n==========\n"
+                            + "Continue to listen for End-Client requests ...\n==========");
         } catch (IOException e) {
-            e.printStackTrace();
+            System.err.print(SEP + "Server connection is down! Terminating ..." + SEP);
         }
     }
-
-    // LEGENDA:
-    // - End-Client, cliente consumidor final, que se liga a uma localização
-    // - Middle-Client, a localização, que se liga ao servidor principal
-    // - Main-Server, o servidor principal
-    // - mainServerConnection, java.net.Socket da conexão entre o Middle-Client e o Main-Server
-    // - out.srv, mainServerConnection.getOutputStream() enviar dados para o Main-Server
-    // - in.srv, mainServerConnection.getInputStream() receber dados do Main-Server
-
-    // OS DOIS PEDAÇOS DE CODIGO ABAIXO FORAM REMOVIDOS DEVIDO A NÃO SER POSSÍVEL RECEBER MENSAGENS DO SERVIDOR
-    // QUE SEJAM ESPECIFICAS DE UM SÓ End-Client
-
-    // ISTO É, O mainServerConnnection Socket É PARTILHADO ENTRE TODAS AS THREADS DE End-Clients CONECTADOS A UM Middle-Client
-    // (esta partilha existe uma vez que só deve existir uma única conexão entre o Middle-Client e Main Server)
-    // (isto é provado pelo desenho da árvore de conexões entre as entidades)
-
-    // NO FUNDO, SÓ DEVEM SER ENVIADAS (através da OutpuStream) MENSAGENS PARA O Main-Server E NUNCA FICAR À ESPERA DE
-    // RESPOSTA DO MESMO, UMA VEZ QUE NÃO SE SABE O QUE ESTÁ NO BUFFER DO InputStream LIGADO AO SERVIDOR.
-
-    // SERIA POSSÍVEL CRIAR UMA ESPÉCIE DE GESTÃO PARA ESTAS MENSAGENS, NO ENTANTO O NÍVEL DE COMPLEXIDADE É ESTRONDOSAMENTE ALTO
-    // para dar um exemplo, se 10 end-clients enviassem uma mensagem para o main-server ao mesmo tempo e ficassem à espera
-    // de resposta (enviar através da OutpuStream do Socket, "out_srv.println(MSG);" e depois "in_srv.readLine();"), 
-    // não só o servidor teria de colocar por ordem as mensagens recebidas como também todos os "readLine();" deveriam
-    // estar sincronizados para que quem enviou primeiro a mensagem recebesse primeiro a mensagem do servidor.
-    // Neste caso, o servidor também só poderia enviar as mensagens de volta para o Middle-Client consoante a ordem
-    // de receção das mensagens
-    // O número de sincronismos necessários é estupidamente alto, tal como a velocidade de processamento dos pedidos seria
-    // extremamente precária.
-
-    // EM CONCLUSÃO, A SOLUÇÃO PASSA POR NUNCA FICAR À ESPERA DE RESPOSTAS DO Main-Server NAS THREADS DE CONEXÃO DE CADA
-    // End-Client AO Middle-Client
 
     /*
     /** Process server output through Protocol /
@@ -201,16 +177,16 @@ public class MiddleClientCommunicationThread extends Thread {
         /** When username and password exist, check for other login from same user /
 
         // request server for login check
-        out_srv.println("%" + processed); // returns the location name if true
+        outMainServer.println("%" + processed); // returns the location name if true
         // send server response to protocol
         processed = login_protocol.processInput(in_srv.readLine()); 
 
         if (processed.equalsIgnoreCase("logged-in")) {
             out_cli.println(processed);
             // send extra information to client, about the multicast connection
-            out_cli.println(multicastIPAdress + ":" + multicastPort);
+            out_cli.println(multicastIPAddress + ":" + multicastPort);
             // notify server of client login on this location
-            out_srv.println("%login:" + login_protocol.getLoginUsername());
+            outMainServer.println("%login:" + login_protocol.getLoginUsername());
             
             /** Client Logged-In, start receiving event notifications /
             out_cli.println(notification_protocol.processInput(""));
@@ -219,14 +195,14 @@ public class MiddleClientCommunicationThread extends Thread {
                 if (clientInp.equalsIgnoreCase("%logout")) {
                     /** Check if client logged out. Stop communication with this server /
                     // notify server of client logout on this location
-                    out_srv.println("%logout:" + login_protocol.getLoginUsername());
+                    outMainServer.println("%logout:" + login_protocol.getLoginUsername());
                     // notify client of successfull logout
                     out_cli.println("Successfully Logged Out ...");
                     quit = true;
                 } else {
 
                     /** Redirect client input into main server /
-                    out_srv.println(clientInp);
+                    outMainServer.println(clientInp);
 
                     /** Process server output through Protocol /
                     processed = notification_protocol.processInput(in_srv.readLine());
