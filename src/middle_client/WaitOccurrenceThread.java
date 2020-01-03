@@ -1,5 +1,7 @@
 package middle_client;
 
+import middle_client.utils.EventModel;
+
 import java.io.IOException;
 import java.net.*;
 
@@ -14,6 +16,7 @@ public class WaitOccurrenceThread extends Thread {
 
     private String multicastIPAdress;
     private int multicastPort;
+    private EventModel eventModel; //Apenas para placeholder
 
     WaitOccurrenceThread(String multicastIPAddress, int multicastPort) throws SocketException {
         super();
@@ -44,9 +47,8 @@ public class WaitOccurrenceThread extends Thread {
                 socket.send(packet);
 
                 // broadcast the ocurrence to all clients
-                new BroadcastEventThread(multicastIPAdress, multicastPort).start();
                 // start sending reports to the server
-                new SendReportsThread(address, port).start();
+                new SendReportsThread(address, port, eventModel).start();
 
             } catch (IOException e) {
                 e.printStackTrace();

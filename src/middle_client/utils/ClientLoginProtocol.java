@@ -1,7 +1,6 @@
 package middle_client.utils;
 
 import com.google.gson.*;
-import middle_client.UserTracking;
 
 import java.io.*;
 import java.util.ArrayList;

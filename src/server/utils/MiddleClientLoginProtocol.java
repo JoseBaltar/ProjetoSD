@@ -1,7 +1,6 @@
 package server.utils;
 
 import com.google.gson.*;
-import server.UserTracking;
 
 import java.io.*;
 
@@ -19,7 +18,7 @@ public class MiddleClientLoginProtocol {
 
     private MainStates main_state = MainStates.DUMMY;
     private SecStates sec_state = SecStates.NOT_DEFINED;
-    private String middleclientip, multicastip, password;
+    private String middleclientip, multicastip, password, locationName;
     private int serverport, multicastport, waitingport;
     private UserTracking tracking;
 
@@ -65,6 +64,7 @@ public class MiddleClientLoginProtocol {
                 ? file.getAsJsonArray() : new JsonArray());
 
         JsonObject client = new JsonObject();
+        client.addProperty("locationName", locationName);
         client.addProperty("middleclientip",middleclientip);
         client.addProperty("multicastip", multicastip);
         client.addProperty("password", password);

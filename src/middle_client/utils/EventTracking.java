@@ -3,11 +3,11 @@ package middle_client.utils;
 import java.util.ArrayList;
 import java.util.Iterator;
 
-public class ClientConnectionTracking {
+public class EventTracking {
 
     private ArrayList<Integer> eventPeriodPorts;
 
-    public ClientConnectionTracking() {
+    public EventTracking() {
         eventPeriodPorts = new ArrayList<>();
     }
 
@@ -17,6 +17,7 @@ public class ClientConnectionTracking {
      * @param port port number
      * @return the added port or -1 in case the port already exists or is invalid
      */
+
     public synchronized int addEventPeriodPort(int port) {
         if (eventPeriodPorts.contains(port) || port < 0 && port > 65535) {
             return -1;

@@ -5,6 +5,7 @@ import java.net.*;
 
 import middle_client.utils.ClientLoginProtocol;
 import middle_client.utils.EventNotificationProtocol;
+import middle_client.utils.UserTracking;
 
 /**
  * Registo e Login <br/>

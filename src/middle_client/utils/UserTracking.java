@@ -1,7 +1,8 @@
-package middle_client;
+package middle_client.utils;
 
-import java.io.*;
 import com.google.gson.*;
+import middle_client.utils.ClientUserModel;
+
 import java.util.ArrayList;
 import java.util.Iterator;
 
@@ -16,11 +17,12 @@ public class UserTracking {
 
     UserTracking() {
         registeredUsers = new ArrayList<>();
+        registeredUsername = new ArrayList<>();
         loggedUsers = new ArrayList<>();
     }
 
-    //Esta aqui deverá ser chamada no ínicio de cada "sessão" para carregar os que existem no ficheiro
-    public synchronized void setRegisteredUsers(JsonElement file){
+    //Esta aqui deverá ser chamada no ínicio de cada "sessão" para carregar os que existem no ficheiro, carregando os utilizadores existentes na sua localização apenas
+    public synchronized void setRegisteredUsers(JsonElement file, String middleClientlocation){
         JsonArray utilizadores
                 = (file != null && file.isJsonArray()
                 ? file.getAsJsonArray() : new JsonArray());
@@ -28,9 +30,11 @@ public class UserTracking {
             int len = utilizadores.size();
             for (int i=0;i<len;i++){
                 JsonObject obj = utilizadores.get(i).getAsJsonObject();
-                ClientUserModel cum = new ClientUserModel(obj.get("username").getAsString(), obj.get("password").getAsString(), obj.get("location").getAsString());
-                registeredUsers.add(cum);
-                registeredUsername.add(obj.get("username").getAsString());
+                if(middleClientlocation.equals(obj.get("location").getAsString())) {
+                    ClientUserModel cum = new ClientUserModel(obj.get("username").getAsString(), obj.get("password").getAsString(), obj.get("location").getAsString());
+                    registeredUsers.add(cum);
+                    registeredUsername.add(obj.get("username").getAsString());
+                }
             }
         }
 

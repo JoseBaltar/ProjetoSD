@@ -1,4 +1,4 @@
-package middle_client;
+package middle_client.utils;
 
 public class ClientUserModel {
     private String username;
