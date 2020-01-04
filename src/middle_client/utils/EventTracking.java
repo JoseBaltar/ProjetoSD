@@ -41,4 +41,13 @@ public class EventTracking {
     public Iterator<EventModel> getCurrentEvents() {
         return currentEvents.iterator();
     }
+
+    /**
+     * Gets the number of active events.
+     * 
+     * @return current total counter of active events
+     */
+    public int numberOfActiveEvents() {
+        return currentEvents.size();
+    }
 }

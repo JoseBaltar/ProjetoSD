@@ -15,13 +15,13 @@ public class ServerCommunicationThread extends Thread {
 
     private Socket clientConnection;
 
-    // private ConnectionsTracking connectionsTracking;
+    private ConnectionsTracking connectionsTracking;
     private MiddleClientLoginProtocol login_protocol;
 
     ServerCommunicationThread(Socket clientConnection, ConnectionsTracking connectionsTracking) {
         super();
         this.clientConnection = clientConnection;
-        // this.connectionsTracking = connectionsTracking;
+        this.connectionsTracking = connectionsTracking;
         this.login_protocol = new MiddleClientLoginProtocol(connectionsTracking);
     }
 
@@ -74,7 +74,7 @@ public class ServerCommunicationThread extends Thread {
                                 System.out.println("\n\nTEST: receive logout notification from Middle-Client, check. Username: " + clientUsername);
 
                             } else {
-                                /** Process notification sent by client: locations:ocurrence-degree:description */
+                                /** Process notification sent by client: location:location;danger-degree;description */
                                 processed = processEvent(clientInp);
                                 System.out.println("\n\nTEST: receive event notification from Middle-Client, check. Notification: " + clientInp);
                                 // the method return one of the following: in-progress or create-event
@@ -82,17 +82,22 @@ public class ServerCommunicationThread extends Thread {
                                     /** Execute server actions on a new event */
 
                                     // notify every location specified - open a ReceiveReportsThread for every one of them
-                                    event = processed.substring(0, processed.indexOf(";")); // get event details
-                                    locations = processed.substring(processed.indexOf(";")).split(":"); // get locations
-                                    System.out.println("\n-----------\nSending Event Notification to all Locations ...");
+                                    event = processed.substring(processed.indexOf("?") + 1, processed.indexOf(";")); // get event details
+                                    locations = processed.substring(processed.indexOf(";") + 1).split(":"); // get locations
+                                    if (!event.equals("3")) {
+                                        System.out.println("\n==========\nSending Event Notification to all mentioned Locations ...");
+                                    } else {
+                                        System.out.println("\n==========\nBroadcasting Event Notification Nationaly ...");
+                                    }
+
+                                    // method "processEvent" already verifies locations given the danger-degree
                                     for (String location : locations) {
                                         // start the UDP socket connection thread for receiving reports
                                         ReceiveReportsThread thread = new ReceiveReportsThread();
                                         thread.start();
                                         // notify client
                                         ip = location.substring(0, location.indexOf(","));
-                                        port = Integer.parseInt(
-                                            location.substring(location.indexOf(","), location.length()));
+                                        port = Integer.parseInt(location.substring(location.indexOf(",") + 1));
                                         sendOcurrenceWarning(event, ip, port, thread.getLocalPort()); // check if location received notification
                                         System.out.println("> Location IP: " + ip + "; PORT: " + port);
                                     }
@@ -112,17 +117,22 @@ public class ServerCommunicationThread extends Thread {
     }
 
     /**
-     * This method returns, after the prefix:
+     * Processes the Event Notification sent by a Middle-Client Location,
+     * with the given parameter string: location:location;danger-degree;description
+     * 
+     * After the prefix, this method returns a string with parameters:
      *  - event details: the danger degree (1 - 3), 
      *      separated from location list by ";"
      *  - a list of locations, separated by ":"
      *      - the IP and respective listening port separated by ","
+     *  - ex: prefix?eventdetails;ip,port:ip,port:
      * 
      * @param eventNotification client input with event notification details
      * @param returns the described string plus one of two prefixes, "in-progress" or "create-event",
      * separated from the rest of the string by "?".
      */
     private String processEvent(String eventNotification) {
+        // check se ja existem connexoes de eventos para um localização
         return "";
     }
 
