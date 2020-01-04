@@ -143,6 +143,12 @@ public class ClientLoginProtocol {
         return userdata;
     }
 
+    /**
+     * @return a JsonElement if it can read, null if can not read
+     *
+     * It creates a JsonElement to be parsed into a JsonArray in order to be accessible for further use
+     *
+     */
     public JsonElement loadUsersFromJSONFile() {
         JsonElement json; // JsonElement correspondente ao ficheiro
         try
@@ -165,6 +171,12 @@ public class ClientLoginProtocol {
         return json;
     }
 
+    /**
+     * @return False if it fails writing to the file, true if succeeds
+     *
+     * This method rewrites the json file by adding a new entry to it
+     * It creats a JSON Object with several Properties associated, to which it will add to a JSON array with the old entries, which will then be written
+     */
     public boolean registerUserJson() {
 
         Gson gson = new Gson(); // Instância gson para escrever o ficheiro Json

@@ -48,8 +48,8 @@ public class UserTracking {
     }
 
     public synchronized boolean checkPassword(String password, String username){
-        for(int ix=0; ix<=registeredUsername.size(); ix++) {
-            if (username.equals(registeredUsername.get(ix)))
+        for(int ix=0; ix<=registeredUsers.size(); ix++) {
+            if (username.equals(registeredUsers.get(ix).getUsername()))
                 return password.equals(registeredUsers.get(ix).getPassword());
         }
         return false;
