@@ -50,6 +50,7 @@ public class UserTracking {
     public synchronized boolean logooutLocation(String location){return loggedLocations.remove(location);}
     public Iterator<String> getLoggedLocations(){return loggedLocations.iterator();}
 
+    //it does the same as the Middle_Client version of this class
     public synchronized boolean addRegisteredMC(JsonObject client) {
         MiddleClientModel mcm = new MiddleClientModel(client.get("middleclientip").getAsString(), client.get("multicastip").getAsString(),
                 client.get("password").getAsString(), client.get("locationName").getAsString(), client.get("serverport").getAsInt(), client.get("multicastport").getAsInt(), client.get("waitingport").getAsInt());

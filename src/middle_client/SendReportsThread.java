@@ -57,11 +57,18 @@ public class SendReportsThread extends Thread {
     } */
 
 
+    /**
+     * @return String com a informação do evento
+     * float currentelapsed time identifica o tempo que decorreu desde que começou até ao período em que o relatório começou a ser feito através do nanotime da JVM
+     */
   private String logInformation(){
       float currentelapsedtime = System.nanoTime() - eventModel.getInitime();
       return "Name: "+eventModel.getName() + ", ID:" + eventModel.getId() + ", Identified personel: "+eventModel.getNotifiedcount() + " Current Time: "+ currentelapsedtime;
   }
 
+    /**
+     * @return String com a informação do evento concluido, contendo carater especial ! para indicar a quebra
+     */
   private String finalLogInfo(){
       return logInformation()+", Status: Concluded, !";
   }
