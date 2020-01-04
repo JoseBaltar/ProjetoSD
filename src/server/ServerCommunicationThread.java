@@ -5,6 +5,7 @@ import java.net.Socket;
 
 import server.utils.ConnectionsTracking;
 import server.utils.MiddleClientLoginProtocol;
+import server.utils.UserTracking;
 
 /**
  * Disponibiliza um meio de comunicação com o Cliente Intermédio através de um Protocolo.
@@ -18,11 +19,11 @@ public class ServerCommunicationThread extends Thread {
     private ConnectionsTracking connectionsTracking;
     private MiddleClientLoginProtocol login_protocol;
 
-    ServerCommunicationThread(Socket clientConnection, ConnectionsTracking connectionsTracking) {
+    ServerCommunicationThread(Socket clientConnection, UserTracking userTracking, ConnectionsTracking connectionsTracking) {
         super();
         this.clientConnection = clientConnection;
         this.connectionsTracking = connectionsTracking;
-        this.login_protocol = new MiddleClientLoginProtocol(connectionsTracking);
+        this.login_protocol = new MiddleClientLoginProtocol(connectionsTracking, userTracking);
     }
 
     @Override
@@ -132,7 +133,9 @@ public class ServerCommunicationThread extends Thread {
      * separated from the rest of the string by "?".
      */
     private String processEvent(String eventNotification) {
-        // check se ja existem connexoes de eventos para um localização
+        // check se ja existem conexoes de eventos para cada localização, e se a localização existe
+        // connectionsTracking.getActiveEventsIterator();
+        connectionsTracking.getMulticastAddresses();
         return "";
     }
 

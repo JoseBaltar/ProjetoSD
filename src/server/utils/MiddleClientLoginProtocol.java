@@ -1,5 +1,9 @@
 package server.utils;
 
+import com.google.gson.*;
+
+import java.io.*;
+
 /**
  * TODO fazer o registo e login para ficheiros, utilizar o shared object "UserTracking"
  */
@@ -25,11 +29,13 @@ public class MiddleClientLoginProtocol {
     private String registeredMulticastAddress; /** Registered Client respective multicastAddress, generated in shared object - used for verification */
 
     private String multicastAddress; /** Client respective multicastAddress - IP and Port */
+    private UserTracking userTracking; /** Shared Object that manages client users */
     private ConnectionsTracking connectionsTracking; /** Shared Object that manages active multicast addresses */
     private boolean dummy = false;
 
-    public MiddleClientLoginProtocol(ConnectionsTracking connectionsTracking) {
+    public MiddleClientLoginProtocol(ConnectionsTracking connectionsTracking, UserTracking userTracking) {
         this.connectionsTracking = connectionsTracking;
+        this.userTracking = userTracking;
     }
 
     public String processInput(String theInput) {
@@ -54,17 +60,22 @@ public class MiddleClientLoginProtocol {
             if (sec_state == SecStates.GET_NAME) {
                 if (theInput.isEmpty()) {
                     theOutput = "Invalid Location! Enter a Location name. (To register a new Location type %register!)";
-                } else if (/* theInput does not exist in registered users */dummy) {
+
+                } else if (userTracking.checkUserClear(locationName)) {
                     theOutput = "Location is not registered, want to register? Type %register, or enter a new name.";
+
                 } else {
                     // User exists
                     locationName = theInput;
                     theOutput = "Enter the password: ";
                     sec_state = SecStates.GET_PASSWORD;
                 }
+
             } else if (sec_state == SecStates.GET_PASSWORD) {
-                if (/* password incorrect */dummy) {
+
+                if (userTracking.checkPassword(theInput, locationName)) {
                     theOutput = "Password is incorrect. Retype password or write %cancel to change Location name.";
+
                 } else {
                     /**
                      * TODO Login User (adicionar user a um objeto partilhado entre threads, com os clientes de login efetuado)
@@ -144,4 +155,58 @@ public class MiddleClientLoginProtocol {
     public String getMulticastAddress() {
         return this.multicastAddress;
     }
+    public boolean registerMiddleClient() {
+
+        Gson gson = new Gson(); // Instância gson para escrever o ficheiro Json
+        File pathf = new File("middleclientlist.json"); // Ficheiro de destino
+        JsonElement file = this.loadMCFromJSONFile();
+        JsonArray clientes
+                = (file != null && file.isJsonArray()
+                ? file.getAsJsonArray() : new JsonArray());
+
+        JsonObject client = new JsonObject();
+        client.addProperty("locationName", locationName);
+        client.addProperty("middleclientip",middleclientip);
+        client.addProperty("multicastip", multicastip);
+        client.addProperty("password", password);
+        client.addProperty("serverport", serverport);
+        client.addProperty("multicastport", multicastport);
+        client.addProperty("waitingport", waitingport);
+
+        userTracking.addRegisteredMC(client);
+        clientes.add(client);
+
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(pathf))) {
+            writer.write(gson.toJson(clientes));
+            writer.flush();
+        } catch (IOException ex) {
+            System.err.println("[" + ex.getClass().getName() + "] "
+                    + "Erro na escrita do ficheiro" );
+            return false;
+        }
+
+        return true;
+    }
+    public JsonElement loadMCFromJSONFile() {
+        JsonElement json; // JsonElement correspondente ao ficheiro
+        try
+        { // Leitura do ficheiro e parse para uma instância de JsonElement
+            FileReader inputFile = new FileReader("middleclientlist.json");
+
+            JsonParser parser = new JsonParser();
+            json = parser.parse(inputFile);
+
+        } catch (FileNotFoundException ex)
+        { // Retorna null se o ficheiro não existir
+            return null;
+        }
+
+        if (json.isJsonArray() && json.getAsJsonArray().size() == 0)
+        {
+            return null;
+        }
+
+        return json;
+    }
+
 }

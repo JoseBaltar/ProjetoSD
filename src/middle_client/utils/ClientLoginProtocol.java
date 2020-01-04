@@ -1,5 +1,10 @@
 package middle_client.utils;
 
+import com.google.gson.*;
+
+import java.io.*;
+import java.util.ArrayList;
+
 /**
  * TODO fazer o registo e login para ficheiros, utilizar o shared object "UserTracking" (anotaçoes TODO nos locais proprios)
  */
@@ -23,14 +28,16 @@ public class ClientLoginProtocol {
     private String password = ""; /** Client password input */
     private String registeredUsername; /** Username of a registered Client - used for verification */
     private boolean dummy = false;
+    private UserTracking userTracking;
 
-    public ClientLoginProtocol(String location) {
+    public ClientLoginProtocol(String location, UserTracking userTracking) {
         this.location = location;
+        this.userTracking = userTracking;
     }
 
     public String processInput(String theInput) {
         String theOutput = null;
-
+        String tempusername = "";
         // Check special inputs
         if (theInput.equals("%register")) {
             main_state = MainStates.REGISTER_CLIENT;
@@ -44,7 +51,7 @@ public class ClientLoginProtocol {
             if (sec_state == SecStates.GET_USERNAME) {
                 if (theInput.isEmpty()) {
                     theOutput = "Invalid Username! Enter your username.";
-                } else if (/* theInput does not exist in registered users */dummy) {
+                } else if (userTracking.checkUserClear(theInput)) {
                     theOutput = "Client is not registered, want to register? Type %register, or enter a new username.";
                 } else {
                     // User exists
@@ -53,15 +60,13 @@ public class ClientLoginProtocol {
                     sec_state = SecStates.GET_PASSWORD;
                 }
             } else if (sec_state == SecStates.GET_PASSWORD) {
-                if (/* password incorrect */dummy) {
+                if (!userTracking.checkPassword(theInput, tempusername)) {
                     theOutput = "Password is incorrect. Retype password or write %cancel to change username.";
                 } else {
+                    /** Login User */
+                    userTracking.loginUser(tempusername);
 
-                    /**
-                     * TODO Login User (adicionar user a um objeto partilhado entre threads, com os clientes de login efetuado)
-                     */
-
-                    theOutput = "logged-in"; // key-word for sinalizing login in communication thread
+                    theOutput = "logged-in"; // key-word for enabling loging in communication thread
                     main_state = MainStates.LOGGED;
 
                     /* Removido uma vez que InputStream do Main-Server já não existe. Explicação no relatório.
@@ -117,12 +122,10 @@ public class ClientLoginProtocol {
                     sec_state = SecStates.GET_PASSWORD;
                     password = "";
                 } else {
-
-                    /** 
-                     * TODO Register Client (adicionar user à base de dados de ficheiros)
-                     */
-                    
+                    /** Register Client */
+                    registerUserJson();
                     theOutput = "User " + registeredUsername + ", registered successfully! Back to Login. Enter a Username.";
+
                     main_state = MainStates.CHECK_LOGIN;
                     sec_state = SecStates.GET_USERNAME;
                 }
@@ -141,4 +144,106 @@ public class ClientLoginProtocol {
     public String getLoginUsername() {
         return username;
     }
+
+    //Em ficheiro TXT,
+    @Deprecated
+    public String registerUser() {
+        String userdata = username + ";" + password + ";" + location + "; \n";
+        try (Writer writer = new BufferedWriter(new OutputStreamWriter(
+                new FileOutputStream("userfile.txt"), "utf-8"))) {
+            writer.write(userdata);
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return userdata;
+    }
+
+    /**
+     * @return a JsonElement if it can read, null if can not read
+     *
+     * It creates a JsonElement to be parsed into a JsonArray in order to be accessible for further use
+     *
+     */
+    public JsonElement loadUsersFromJSONFile() {
+        JsonElement json; // JsonElement correspondente ao ficheiro
+        try
+        { // Leitura do ficheiro e parse para uma instância de JsonElement
+            FileReader inputFile = new FileReader("utilizadores.json");
+
+            JsonParser parser = new JsonParser();
+            json = parser.parse(inputFile);
+
+        } catch (FileNotFoundException ex)
+        { // Retorna null se o ficheiro não existir
+            return null;
+        }
+
+        if (json.isJsonArray() && json.getAsJsonArray().size() == 0)
+        {
+            return null;
+        }
+
+        return json;
+    }
+
+    /**
+     * @return False if it fails writing to the file, true if succeeds
+     *
+     * This method rewrites the json file by adding a new entry to it
+     * It creats a JSON Object with several Properties associated, to which it will add to a JSON array with the old entries, which will then be written
+     */
+    public boolean registerUserJson() {
+
+        Gson gson = new Gson(); // Instância gson para escrever o ficheiro Json
+        File pathf = new File("userfile.json"); // Ficheiro de destino
+        JsonElement file = this.loadUsersFromJSONFile();
+        JsonArray utilizadores
+                = (file != null && file.isJsonArray()
+                ? file.getAsJsonArray() : new JsonArray());
+
+        JsonObject utilizador = new JsonObject();
+        utilizador.addProperty("username",username);
+        utilizador.addProperty("password", password);
+        utilizador.addProperty("location", location);
+        userTracking.addRegisteredUser(utilizador);
+        utilizadores.add(utilizador);
+
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(pathf))) {
+            writer.write(gson.toJson(utilizadores));
+            writer.flush();
+        } catch (IOException ex) {
+            System.err.println("[" + ex.getClass().getName() + "] "
+                    + "Erro na escrita do ficheiro" );
+            return false;
+        }
+
+        return true;
+    }
+
+    //Em ficheiro TXT,
+    @Deprecated
+    public ArrayList<String> getRegisteredUsers() {
+        try {
+            BufferedReader br = new BufferedReader(new FileReader("userfile.txt"));
+            String line = br.readLine();
+            ArrayList<String> users = new ArrayList<>();
+
+            while (line != null) {
+                users.add(line);
+                line = br.readLine();
+            }
+            br.close();
+            return users;
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
 }

@@ -1,9 +1,10 @@
 package middle_client;
 
+import middle_client.utils.EventModel;
+
 import java.io.IOException;
 import java.net.*;
 
-import middle_client.utils.EventModel;
 import middle_client.utils.EventTracking;
 
 /**
@@ -41,7 +42,7 @@ public class WaitOccurrenceThread extends Thread {
         while (!this.isInterrupted()) {
             try {
                 // DatagramPacket used to receive a datagram from the socket
-                byte[] buf = new byte[256];
+                byte[] buf = new byte[512];
                 DatagramPacket packet = new DatagramPacket(buf, buf.length);
                 listeningSocket.receive(packet); // wait for server notification
 

@@ -3,7 +3,7 @@ package middle_client.utils;
 /**
  * TODO
  */
-public class NotificationProtocol {
+public class EventNotificationProtocol {
     private static enum MainStates {
         DUMMY, LOGOUT
     };
@@ -28,7 +28,7 @@ public class NotificationProtocol {
 
         if (dummy) {
 
-            
+
 
         } else if (main_state == MainStates.LOGOUT) {
             if (sec_state == SecStates.NOT_DEFINED) {

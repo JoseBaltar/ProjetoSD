@@ -5,6 +5,7 @@ import java.net.*;
 
 import middle_client.utils.ClientLoginProtocol;
 import middle_client.utils.NotificationProtocol;
+import middle_client.utils.UserTracking;
 import middle_client.utils.EventTracking;
 
 /**
@@ -26,7 +27,7 @@ public class MiddleClientCommunicationThread extends Thread {
     private String multicastIPAddress;
     private int multicastPort;
 
-    private EventTracking eventTracking;
+    // private EventTracking eventTracking;
     
     private ClientLoginProtocol login_protocol;
     private NotificationProtocol notification_protocol;
@@ -39,7 +40,7 @@ public class MiddleClientCommunicationThread extends Thread {
      * @param multicastPort This Location, Middle-Client, respective multicast address PORT
      */
     MiddleClientCommunicationThread(String locationName, Socket clientConnection, PrintWriter outMainServer, 
-                        String multicastIPAddress, int multicastPort, EventTracking eventTracking) {
+                        String multicastIPAddress, int multicastPort, EventTracking eventTracking, UserTracking userTracking) {
         super();
         this.clientConnection = clientConnection;
         this.outMainServer = outMainServer;
@@ -48,9 +49,9 @@ public class MiddleClientCommunicationThread extends Thread {
         this.multicastIPAddress = multicastIPAddress;
         this.multicastPort = multicastPort;
 
-        this.eventTracking = eventTracking;
+        // this.eventTracking = eventTracking;
 
-        this.login_protocol = new ClientLoginProtocol(locationName);
+        this.login_protocol = new ClientLoginProtocol(locationName, userTracking);
         this.notification_protocol = new NotificationProtocol();
     }
 

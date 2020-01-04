@@ -4,6 +4,7 @@ import java.io.*;
 import java.net.*;
 
 import middle_client.utils.EventTracking;
+import middle_client.utils.UserTracking;
 
 /**
  * Middle-Client (1º):
@@ -45,6 +46,7 @@ public class MiddleClient {
             WaitOccurrenceThread waitOccurrenceThread = null;
 
             /** Shared Objects */
+            UserTracking userTracking = new UserTracking();
             EventTracking eventTracking = new EventTracking();
 
             /** Connect to main serverSocket, serverSocket.Server */
@@ -99,7 +101,8 @@ public class MiddleClient {
                                 Socket clientConnection;
                                 while (true) {
                                     clientConnection = serverSocket.accept();
-                                    new MiddleClientCommunicationThread(locationName, clientConnection, to_server, multicastIP, multicastPort, eventTracking).start();
+                                    new MiddleClientCommunicationThread(locationName, clientConnection, to_server, 
+                                                    multicastIP, multicastPort, eventTracking, userTracking).start();
                                 }
                             } catch (IOException e) {
                                 System.err.println("Could not listen with ServerSocket!");

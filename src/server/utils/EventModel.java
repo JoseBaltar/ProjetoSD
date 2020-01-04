@@ -1,4 +1,4 @@
-package middle_client.utils;
+package server.utils;
 
 import java.sql.Timestamp;
 

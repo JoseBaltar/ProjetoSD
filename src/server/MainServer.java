@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 
+import server.utils.UserTracking;
 import server.utils.ConnectionsTracking;
 
 /**
@@ -16,8 +17,11 @@ public class MainServer {
 
     public static void main(String[] args) throws IOException {
 
-        /** Wait and Process client connections. */
+        /** Shared Objects */
+        UserTracking userTracking = new UserTracking();
         ConnectionsTracking connectionsTracking = new ConnectionsTracking();
+
+        /** Wait and Process client connections. */
         try (
             ServerSocket serverSocket = new ServerSocket(0)
         ) {
@@ -25,7 +29,7 @@ public class MainServer {
             Socket clientSocket;
             while (true) {
                 clientSocket = serverSocket.accept();
-                new ServerCommunicationThread(clientSocket, connectionsTracking).start();
+                new ServerCommunicationThread(clientSocket, userTracking, connectionsTracking).start();
                 System.out.print(CLIENT_CONNECTED + clientSocket.getInetAddress() + "; PORT: " + clientSocket.getPort() + SEP);
             }
         } catch (IOException e) {
