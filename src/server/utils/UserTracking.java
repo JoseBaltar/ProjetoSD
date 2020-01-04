@@ -73,6 +73,22 @@ public class UserTracking {
 
     }
 
+    public synchronized boolean checkPassword(String password, String location){
+        for(int ix=0; ix<=registeredClients.size(); ix++) {
+            if (location.equals(registeredClients.get(ix).getLocationName()))
+                return password.equals(registeredClients.get(ix).getPassword());
+        }
+        return false;
+    }
+
+    public synchronized boolean checkUserClear(String username){
+        for(int ix=0; ix<=registeredClients.size(); ix++){
+            if(username.equals(registeredClients.get(ix).getLocationName()))
+                return false;
+        }
+        return true;
+    }
+
     public Iterator<MiddleClientModel> getAllMiddleClients(){
         return registeredClients.iterator();
     }
