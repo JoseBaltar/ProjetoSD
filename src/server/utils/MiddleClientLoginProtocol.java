@@ -14,7 +14,7 @@ public class MiddleClientLoginProtocol {
     private static enum SecStates {
         NOT_DEFINED, GET_NAME /** request Client a locationName */, GET_PASSWORD /** request Client the password */, 
         RETYPE_PASSWORD /** registration password confirmation */, 
-        GET_SERVER_DATA /** request Server if the Client is already logged in (other locations) */
+        GET_CLIENT_DATA /** wait for Client response for it's occurrence listening address */
     };
 
     private MainStates main_state = MainStates.CHECK_LOGIN;
@@ -71,12 +71,19 @@ public class MiddleClientLoginProtocol {
                     theOutput = "Password is incorrect. Retype password or write %cancel to change Location name.";
 
                 } else {
-                    /** Logged In, save multicastAddress */
-                    userTracking.loginMiddleClient(locationName);
+                    /** Logged In, save multicastAddress and wait for client response */
                     this.multicastAddress = userTracking.getLoggedMiddleClient(locationName).getMulticastAddress();
                     theOutput = "logged-in"; // key-word for sinalizing login in communication thread
-                    main_state = MainStates.LOGGED;
+                    sec_state = SecStates.GET_CLIENT_DATA;
                 }
+
+            } else if (sec_state == SecStates.GET_CLIENT_DATA) {
+
+                userTracking.getLoggedMiddleClient(locationName).locationAddress = theInput;
+                if (userTracking.loginMiddleClient(locationName))
+                    main_state = MainStates.LOGGED;
+                else
+                    theOutput = "ERROR while logging in! Enter a Location name. (To register a new Location type %register!)";
 
             } else {
                 theOutput = "Greetings from the Main Server! Enter your Location name: (To register a new Location type %register!)";

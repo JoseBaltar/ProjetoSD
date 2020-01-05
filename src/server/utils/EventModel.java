@@ -1,51 +1,38 @@
 package server.utils;
 
-import java.sql.Timestamp;
-
 public class EventModel {
 
-    private String name, id;
-    private int severity, notifiedcount;
-    private long initime;
+    private String eventName, locationName, description;
+    private int severity;
 
-
-    public EventModel(String name, int severity) {
-        this.name = name;
+    public EventModel(String locationName, int severity, String description) {
+        switch (severity) {
+            case 1:
+                this.eventName = "ForestFire";
+                break;
+            case 2: 
+                this.eventName = "Earthquake";
+            default:
+                this.eventName = "NuclearAccident";
+        }
+        this.locationName = locationName;
         this.severity = severity;
-        setId();
-        setInitime();
-    }
-
-    private void setId() {
-        Timestamp timestamp = new Timestamp(System.currentTimeMillis());
-        this.id = name+timestamp.toString();
+        this.description = description;
     }
 
     public int getSeverity() {
         return severity;
     }
 
-    public String getName() {
-        return name;
+    public String getLocationName() {
+        return locationName;
+    }
+    
+    public String getEventName() {
+        return eventName;
     }
 
-    public String getId() {
-        return id;
-    }
-
-    public long getInitime() {
-        return initime;
-    }
-
-    private void setInitime() {
-        initime = System.nanoTime();
-    }
-
-    public int getNotifiedcount() {
-        return notifiedcount;
-    }
-
-    public void setNotifiedcount(int notifiedcount) {
-        this.notifiedcount = notifiedcount;
+    public String getDescription() {
+        return description;
     }
 }

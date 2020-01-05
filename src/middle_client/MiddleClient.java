@@ -33,6 +33,8 @@ public class MiddleClient {
 
     private static final String JSON_FILE_PATH = "../files/MiddleClientUsers.json";
 
+    private static String locationName;
+
     public static void main(String[] args) throws IOException {
         /** Check arguments */
         if (args.length != 2) {
@@ -48,7 +50,6 @@ public class MiddleClient {
             int serverPort = Integer.parseInt(args[1]);
 
             /** After Login variables */
-            String locationName = "";
             String multicastIP = null;
             int multicastPort = 0;
             WaitOccurrenceThread waitOccurrenceThread = null;
@@ -105,7 +106,7 @@ public class MiddleClient {
                             }
 
                             // send extra information to server, about the waitOccurrencePort, enabling the server to notify this Middle-Client
-                            to_server.println(waitOccurrenceThread.getSocketPort());
+                            to_server.println(mainServerConnection.getInetAddress().getHostAddress() + "/" + waitOccurrenceThread.getSocketPort());
 
                             /** Wait and Process client connections */
                             try (
@@ -137,6 +138,10 @@ public class MiddleClient {
                 // mainServerConnection.close(); // close socket
             }
         }
+    }
+
+    public static String getThisLocationName() {
+        return locationName;
     }
 
     private static JsonElement loadFromJSONFile(String file_path) {

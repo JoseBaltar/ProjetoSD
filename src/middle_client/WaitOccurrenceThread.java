@@ -64,9 +64,10 @@ public class WaitOccurrenceThread extends Thread {
                 // broadcast the ocurrence to all clients
                 this.broadcastEventToClients(eventDetails, multicastIPAddress, multicastPort);
                 // instanciate the event model
-                String eventName = eventDetails.substring(0, eventDetails.indexOf(","));
-                int eventSeverity = Integer.parseInt(eventDetails.substring(eventDetails.indexOf(",")));
-                EventModel eventModel = new EventModel(eventName, eventSeverity);
+                int sep = eventDetails.indexOf(","); 
+                String description = eventDetails.substring(sep + 1);
+                int eventSeverity = Integer.parseInt(eventDetails.substring(0, sep));
+                EventModel eventModel = new EventModel(MiddleClient.getThisLocationName(), eventSeverity, description);
                 // start sending reports to the server
                 Thread event = new SendReportsThread(address, serverListeningPort, eventModel);
                 event.start();

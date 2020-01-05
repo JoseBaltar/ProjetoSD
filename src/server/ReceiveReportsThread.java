@@ -36,7 +36,7 @@ public class ReceiveReportsThread extends Thread {
 
         while (!Thread.interrupted()) {
             try {
-                byte[] buf = new byte[1024];
+                byte[] buf = new byte[2048];
                 DatagramPacket packet = new DatagramPacket(buf, buf.length);
                 socket.receive(packet);
 
@@ -58,7 +58,7 @@ public class ReceiveReportsThread extends Thread {
         FileHandler fh;
 
         try {
-            fh = new FileHandler(name+".log", true);
+            fh = new FileHandler("../files/logs/"+name+".log", true);
             logger.addHandler(fh);
             SimpleFormatter simpleFormatter = new SimpleFormatter();
             fh.setFormatter(simpleFormatter);

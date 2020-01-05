@@ -4,48 +4,67 @@ import java.sql.Timestamp;
 
 public class EventModel {
 
-    private String name, id;
+    private String eventName, id, locationName, description;
     private int severity, notifiedcount;
     private long initime;
 
-
-    public EventModel(String name, int severity) {
-        this.name = name;
+    public EventModel(String locationName, int severity, String description) {
+        switch (severity) {
+            case 1:
+                this.eventName = "ForestFire";
+                break;
+            case 2: 
+                this.eventName = "Earthquake";
+            default:
+                this.eventName = "NuclearAccident";
+        }
+        this.locationName = locationName;
         this.severity = severity;
+        this.description = description;
+        this.notifiedcount = 0;
         setId();
         setInitime();
     }
 
+    
     private void setId() {
         Timestamp timestamp = new Timestamp(System.currentTimeMillis());
-        this.id = name+timestamp.toString();
-    }
-
-    public int getSeverity() {
-        return severity;
-    }
-
-    public String getName() {
-        return name;
+        this.id = eventName+timestamp.toString();
     }
 
     public String getId() {
         return id;
     }
 
-    public long getInitime() {
-        return initime;
-    }
-
     private void setInitime() {
         initime = System.nanoTime();
     }
 
-    public int getNotifiedcount() {
+    public long getInitime() {
+        return initime;
+    }
+
+    public int getSeverity() {
+        return severity;
+    }
+
+    public String getEventName() {
+        return eventName;
+    }
+
+    public String getLocationName() {
+        return locationName;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public int getNotifiedCount() {
         return notifiedcount;
     }
 
-    public void setNotifiedcount(int notifiedcount) {
-        this.notifiedcount = notifiedcount;
+    public void addNotifiedCount(int notifiedcount) {
+        this.notifiedcount += notifiedcount;
     }
 }

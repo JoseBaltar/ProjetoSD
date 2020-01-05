@@ -2,11 +2,17 @@ package server;
 
 import com.google.gson.*;
 
+import server.utils.EventModel;
+
 import java.io.*;
+import java.net.DatagramPacket;
+import java.net.DatagramSocket;
+import java.net.InetAddress;
 import java.net.Socket;
 import java.util.Iterator;
 
 import server.utils.ConnectionsTracking;
+import server.utils.EventTracking;
 import server.utils.MiddleClientLoginProtocol;
 import server.utils.UserTracking;
 
@@ -30,16 +36,18 @@ public class ServerCommunicationThread extends Thread {
     private String JSON_FILE_PATH;
 
     private UserTracking userTracking;
-    private ConnectionsTracking connectionsTracking;
+    private EventTracking eventTracking;
+
     private MiddleClientLoginProtocol login_protocol;
 
-    ServerCommunicationThread(Socket clientConnection, UserTracking userTracking, ConnectionsTracking connectionsTracking, String path) {
+    ServerCommunicationThread(Socket clientConnection, UserTracking userTracking, ConnectionsTracking connectionsTracking, 
+                        EventTracking eventTracking, String path) {
         super();
         this.clientConnection = clientConnection;
         this.DISPLAY = "\nMain-Server | Middle-Client:" + clientConnection.getInetAddress() + ":" + clientConnection.getPort() + ": ";
 
         this.userTracking = userTracking;
-        this.connectionsTracking = connectionsTracking;
+        this.eventTracking = eventTracking;
         this.JSON_FILE_PATH = path;
 
         this.login_protocol = new MiddleClientLoginProtocol(connectionsTracking, userTracking, path);
@@ -135,8 +143,8 @@ public class ServerCommunicationThread extends Thread {
                                         ReceiveReportsThread thread = new ReceiveReportsThread();
                                         thread.start();
                                         // notify client
-                                        ip = location.substring(0, location.indexOf(","));
-                                        port = Integer.parseInt(location.substring(location.indexOf(",") + 1));
+                                        ip = location.substring(0, location.indexOf("/"));
+                                        port = Integer.parseInt(location.substring(location.indexOf("/") + 1));
                                         sendOcurrenceWarning(event, ip, port, thread.getLocalPort()); // check if location received notification
                                         System.out.println("> Location IP: " + ip + "; PORT: " + port);
                                     }
@@ -164,17 +172,38 @@ public class ServerCommunicationThread extends Thread {
      *      separated from location list by ";"
      *  - a list of locations, separated by ":"
      *      - the IP and respective listening port separated by ","
-     *  - ex: prefix?eventdetails;ip,port:ip,port:
+     *  - ex: prefix?eventdetails;ip,port:ip,port
      * 
      * @param eventNotification client input with event notification details
      * @param returns the described string plus one of two prefixes, "in-progress" or "create-event",
      * separated from the rest of the string by "?".
      */
     private String processEvent(String eventNotification) {
-        // check se ja existem conexoes de eventos para cada localização, e se a localização existe
-        // connectionsTracking.getActiveEventsIterator();
-        connectionsTracking.getMulticastAddresses();
-        return "";
+        int sep = eventNotification.indexOf(";"), sep2 = eventNotification.indexOf(";", sep),
+            degree = Integer.parseInt(eventNotification.substring(sep + 1, sep2));
+        String[] locationNames = eventNotification.substring(0, sep).split(":");
+        String description = eventNotification.substring(sep2 + 1);
+
+        String prefix = "create-event", eventDetails = degree + "," + description, locations = "";
+        
+        for (String location : locationNames) {
+            if (userTracking.isMiddleClientLogged(location)) {
+                // check if location is valid
+
+                if (!eventTracking.isEventActive(location, degree)) {
+                     // check if location already has the event active (same dange-degree)
+                    eventTracking.addActiveEvent(new EventModel(location, degree, description));
+                    if (locations.isEmpty())
+                        locations = locations + userTracking.getLoggedMiddleClient(location).locationAddress;
+                    else
+                        locations = locations + ":" + userTracking.getLoggedMiddleClient(location).locationAddress;
+                }
+            }
+        }
+
+        if (locations.isEmpty())
+            prefix = "in-progress";
+        return prefix + eventDetails + locations;
     }
 
     /**
@@ -189,6 +218,20 @@ public class ServerCommunicationThread extends Thread {
     private void sendOcurrenceWarning(String event, String ip, int port, int serverListeningPort) {
         // UDP DatagramSocket para enviar o evento para o Middle-Client
         // arranjar melhor maneira de verificar se a localização recebeu a notificação
+        // server has received a request from a client, construct the response
+        try (
+            DatagramSocket socket = new DatagramSocket()
+        ){
+            // construct packet
+            byte[] buf = (event + ":" + serverListeningPort).getBytes();
+
+            // send it
+            InetAddress address = InetAddress.getByName(ip);
+            DatagramPacket packet = new DatagramPacket(buf, buf.length, address, port);
+            socket.send(packet);
+        } catch (IOException e) {
+            System.err.println("\nERROR - Couldn't send event notification to Middle-Client!");
+        }
     }
     
     private boolean addRegisteredMiddleClientUserToFile(String username, String locationName) {

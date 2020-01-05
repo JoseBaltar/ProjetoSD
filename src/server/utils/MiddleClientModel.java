@@ -5,6 +5,7 @@ import java.util.Iterator;
 
 public class MiddleClientModel {
 
+    public String locationAddress = null;
     private String locationName, multicastAddress;
     private ArrayList<String> currentlyLoggedUsers;
     private ArrayList<String> registeredUsers;

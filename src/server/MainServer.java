@@ -8,6 +8,7 @@ import java.net.Socket;
 
 import server.utils.UserTracking;
 import server.utils.ConnectionsTracking;
+import server.utils.EventTracking;
 
 /**
  * Espera na porta especificada e lança threads para comunicação com o Cliente Intermédio
@@ -23,6 +24,7 @@ public class MainServer {
 
         /** Shared Objects */
         UserTracking userTracking = new UserTracking();
+        EventTracking eventTracking = new EventTracking();
 
         /** Instanciate all registered Users */
         userTracking.setRegisteredClients(loadFromJSONFile(JSON_FILE_PATH));
@@ -36,7 +38,7 @@ public class MainServer {
             Socket clientSocket;
             while (true) {
                 clientSocket = serverSocket.accept();
-                new ServerCommunicationThread(clientSocket, userTracking, connectionsTracking, JSON_FILE_PATH).start();
+                new ServerCommunicationThread(clientSocket, userTracking, connectionsTracking, eventTracking, JSON_FILE_PATH).start();
                 System.out.print(CLIENT_CONNECTED + clientSocket.getInetAddress() + "; PORT: " + clientSocket.getPort() + SEP);
             }
         } catch (IOException e) {
