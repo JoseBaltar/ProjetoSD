@@ -17,7 +17,7 @@ public class NotificationProtocol {
 
     private static enum SecStates {
         NOT_DEFINED, GET_LOCATION,
-        GET_SEVERITY
+        GET_SEVERITY, GET_DESCRIPTION
     };
 
     private MainStates main_state = MainStates.SENDEVENT;
@@ -26,7 +26,7 @@ public class NotificationProtocol {
     private boolean dummy = false;
     private UserTracking userTracking;
     private EventTracking eventTracking;
-    private String name;
+    private String name, description;
     private int severity;
 
     public String processInput(String theInput) {
@@ -54,7 +54,16 @@ public class NotificationProtocol {
 
                 } else {
                     name = theInput;
-                    theOutput = "Enter the event severity (from 1 to 3)";
+                    theOutput = "Enter the event description.";
+                    sec_state = SecStates.GET_DESCRIPTION;
+                }
+            }
+            if(sec_state == SecStates.GET_SEVERITY) {
+                if (theInput.isEmpty()) {
+                    theOutput="Invalid Description! Please fill the description";
+                }else{
+                    description = theInput;
+                    theOutput = "Enter the event severity from 1 to 3.";
                     sec_state = SecStates.GET_SEVERITY;
                 }
             }
@@ -93,9 +102,9 @@ public class NotificationProtocol {
         return theOutput;
     }
 
-    public EventModel setEventModel(){
+   /* public EventModel setEventModel(){
         return new EventModel(name, severity);
-    }
+    } */
 
 
 }
