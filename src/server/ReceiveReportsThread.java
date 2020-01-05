@@ -53,6 +53,14 @@ public class ReceiveReportsThread extends Thread {
         }
     }
 
+    /**
+     * @param information to be written
+     * @param name the name of the file which is built in the run() method
+     *
+     *             Gets the information received via the socket and writes it on a log file.
+     *             If the event has terminated, it writes on a different file
+     *
+     */
     public synchronized void LogReport(String information, String name){
         Logger logger = Logger.getLogger(name);
         FileHandler fh;

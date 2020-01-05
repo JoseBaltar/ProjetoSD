@@ -1,4 +1,4 @@
-package middle_client.utils;
+package server.utils;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -14,7 +14,7 @@ public class EventTracking {
     /**
      * Adds an occurring event to the current ative event list of this Location.
      * 
-     * @param eventRelatedThread event instance that represents a currently active event
+     * @param event event instance that represents a currently active event
      * @return true if added, false otherwise
      */
     public synchronized boolean addActiveEvent(EventModel event) {
@@ -25,7 +25,7 @@ public class EventTracking {
     /**
      * Adds an occurring event to the current ative event list of this Location.
      * 
-     * @param eventd event instance that represents a currently active event
+     * @param event event instance that represents a currently active event
      * @return true if added, false otherwise
      */
     public synchronized boolean removeActiveEvent(EventModel event) {

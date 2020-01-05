@@ -119,7 +119,7 @@ public class WaitOccurrenceThread extends Thread {
 
     /**
      * Get the generated DatagramSocket local port.
-     * @return {@link #socket} port
+     * @return port
      */
     public int getSocketPort() {
         return listeningSocket.getLocalPort();

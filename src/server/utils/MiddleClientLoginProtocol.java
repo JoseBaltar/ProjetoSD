@@ -166,12 +166,8 @@ public class MiddleClientLoginProtocol {
 
         JsonObject client = new JsonObject();
         client.addProperty("locationName", locationName);
-        client.addProperty("middleclientip",middleclientip);
-        client.addProperty("multicastip", multicastip);
         client.addProperty("password", password);
-        client.addProperty("serverport", serverport);
-        client.addProperty("multicastport", multicastport);
-        client.addProperty("waitingport", waitingport);
+        client.addProperty("multicastAddress", multicastAddress);
 
         userTracking.addRegisteredMC(client);
         clientes.add(client);

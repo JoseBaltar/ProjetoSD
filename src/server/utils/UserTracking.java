@@ -9,9 +9,10 @@ import java.util.Iterator;
 
 public class UserTracking {
 
-    private ArrayList<MiddleClientModel> registeredClients; // ficheiro
+    private ArrayList<RegisterClientModel> registeredClients; // ficheiro
     private ArrayList<String> loggedLocations;
     private ArrayList<String> loggedUsers;
+    private ArrayList<String> registeredUsers;
 
     public UserTracking() {
         registeredClients = new ArrayList<>();
@@ -43,7 +44,15 @@ public class UserTracking {
         return loggedUsers.iterator();
     }
 
-    public synchronized boolean loginLocation(String location){ 
+    /**
+     * @param location name of location to be logged
+     * @return true if it logged, false if it doesn't login (due to there already being a logged location with the same name)
+     */
+    public synchronized boolean loginLocation(String location){
+        for(int ix=0; ix < loggedLocations.size(); ix++)
+            if(loggedLocations.get(ix).equals(location))
+                return false;
+
         return loggedLocations.add(location);
     }
 
@@ -57,8 +66,8 @@ public class UserTracking {
 
     //it does the same as the Middle_Client version of this class
     public synchronized boolean addRegisteredMC(JsonObject client) {
-        MiddleClientModel mcm = new MiddleClientModel(client.get("middleclientip").getAsString(), client.get("multicastip").getAsString(),
-                client.get("password").getAsString(), client.get("locationName").getAsString(), client.get("serverport").getAsInt(), client.get("multicastport").getAsInt(), client.get("waitingport").getAsInt());
+        RegisterClientModel mcm = new RegisterClientModel(client.get("locationName").getAsString(), client.get("multicastip").getAsString(),
+                client.get("password").getAsString(), registeredUsers);
         return registeredClients.add(mcm);
     }
 
@@ -71,8 +80,8 @@ public class UserTracking {
             int len = clients.size();
             for (int i=0;i<len;i++){
                 JsonObject client = clients.get(i).getAsJsonObject();
-                MiddleClientModel mcm = new MiddleClientModel(client.get("middleclientip").getAsString(), client.get("multicastip").getAsString(),
-                        client.get("password").getAsString(), client.get("locationName").getAsString(), client.get("serverport").getAsInt(), client.get("multicastport").getAsInt(), client.get("waitingport").getAsInt());
+                RegisterClientModel mcm = new RegisterClientModel(client.get("locationName").getAsString(), client.get("multicastAddress").getAsString(),
+                        client.get("password").getAsString(), registeredUsers);
                 registeredClients.add(mcm);
             }
         }
@@ -95,7 +104,7 @@ public class UserTracking {
         return true;
     }
 
-    public Iterator<MiddleClientModel> getAllMiddleClients(){
+    public Iterator<RegisterClientModel> getAllMiddleClients(){
         return registeredClients.iterator();
     }
 }

@@ -35,7 +35,7 @@ public class MiddleClientCommunicationThread extends Thread {
     /**
      * @param locationName Location name relative to this Middle-Client
      * @param clientConnection Client/Middle-Client socket connection
-     * @param mainServerConnection Middle-Client/Server socket connection, the same for every thread 
+     * @param outMainServer Middle-Client/Server socket connection, the same for every thread
      * @param multicastIPAddress This Location, Middle-Client, respective multicastIP address
      * @param multicastPort This Location, Middle-Client, respective multicast address PORT
      */
