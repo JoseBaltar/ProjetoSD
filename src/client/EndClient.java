@@ -25,12 +25,10 @@ public class EndClient {
 
     public static void main(String[] args) throws IOException {
 
-        /** Connect to middle_client.CivilProtection server and start communications */
         String serverIP; // = args[0];
         int serverPort; // = Integer.parseInt(args[1]);
 
-        String userInput;
-        String serverOutput;
+        String userInput, serverOutput; // store input from user and output from protocol, respectively
 
         boolean quit = false, exit = false;
         int separator;
@@ -42,7 +40,7 @@ public class EndClient {
         BufferedReader stdIn = new BufferedReader(new InputStreamReader(System.in));
         while (!exit) {
             try {
-                /** Input which Location Server to connect */
+                /** Connect to middle_client.CivilProtection server and start communications */
                 System.out.print(ASK_SERVER_INFO + ASK_SERVER_IP);
                 serverIP = stdIn.readLine();
                 System.out.print(ASK_SERVER_PORT);
@@ -55,24 +53,21 @@ public class EndClient {
                                 new InputStreamReader(serverConnection.getInputStream())); /** input stream from server */
                 ) {
 
-                    /** Register and Login into Middle-Client Server */
                     quit = false;
                     System.out.print(EXIT_INFO + SERVER_RESPONSE + from_server.readLine() + CLIENT_MESSAGE);
                     while (!quit && (userInput = stdIn.readLine()) != null) {
-                        // terminate communication
+                        /** Register and Login into Middle-Client Server */
+
                         if (userInput.equals("%quit")) {
                             to_server.println(userInput);
                             System.out.println(EXIT_WARNING);
                             quit = true;
                         } else {
-                            // send input to server
-                            to_server.println(userInput);
+                            to_server.println(userInput); // send input to server
+                            serverOutput = from_server.readLine(); // get server response
 
-                            // get server response
-                            serverOutput = from_server.readLine();
                             if (serverOutput.equalsIgnoreCase("logged-in")) {
-
-                                /** Start communication between Logged Client and Middle-Client Server */
+                                /** Client Logged In */
                                 System.out.println(SERVER_RESPONSE + from_server.readLine());
                                 
                                 // Open thread for processing occurrence warnings
@@ -86,18 +81,17 @@ public class EndClient {
                                 // Continue communication with the server. Send notifications.
                                 System.out.print(LOGOUT_INFO + CLIENT_MESSAGE);
                                 while (!quit && (userInput = stdIn.readLine()) != null) {
-                                    // terminate communication
+                                    /** Client - Middle_Client. Start receiving event notifications */
+
                                     if (userInput.equals("%logout")) {
                                         to_server.println(userInput);
                                         System.out.print(from_server.readLine() + EXIT_WARNING);
                                         quit = true;
 
                                     } else {
-                                        // send input to server
-                                        to_server.println(userInput);
-
-                                        // get server response
-                                        serverOutput = from_server.readLine();
+                                        to_server.println(userInput); // send input to server
+                                        serverOutput = from_server.readLine(); // get server response
+                                        
                                         if (serverOutput.equalsIgnoreCase("processed")) {
                                             // notification sent successfully, read new server line
                                             System.out.print(SENT_NOTIFICATION + SERVER_RESPONSE + from_server.readLine() + CLIENT_MESSAGE);

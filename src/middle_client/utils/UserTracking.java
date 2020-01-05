@@ -8,18 +8,69 @@ import java.util.Iterator;
 
 public class UserTracking {
 
-    private ArrayList<RegisterClientModel> registeredUsers; // ficheiro
-    private ArrayList<String> registeredUsername;
+    private ArrayList<RegisterClientModel> registeredUsers;
     private ArrayList<String> loggedUsers;
 
     public UserTracking() {
         registeredUsers = new ArrayList<>();
-        registeredUsername = new ArrayList<>();
         loggedUsers = new ArrayList<>();
     }
 
+    public synchronized boolean loginUser(String username) {
+        if (!isClientRegistered(username))
+            return false;
+        return loggedUsers.add(username);
+    }
+
+    public synchronized boolean logoutUser(String username) {
+        if (!isClientLogged(username))
+            return false;
+        return loggedUsers.remove(username);
+    }
+
+    public Iterator<String> getLoggedUsersIterator() {
+        return loggedUsers.iterator();
+    }
+
+    public boolean isClientLogged(String username) {
+        return loggedUsers.contains(username);
+    }
+
+    public synchronized boolean checkPassword(String password, String username){
+        for(int ix=0; ix<registeredUsers.size(); ix++) {
+            if (username.equals(registeredUsers.get(ix).getUsername()))
+                return password.equals(registeredUsers.get(ix).getPassword());
+        }
+        return false;
+    }
+
+    public synchronized boolean checkUserClear(String username){
+        for(int ix=0; ix<registeredUsers.size(); ix++){
+            if(username.equals(registeredUsers.get(ix).getUsername()))
+                return false;
+        }
+        return true;
+    }
+
+    public boolean isClientRegistered(String username) {
+        Iterator<RegisterClientModel> it = registeredUsers.iterator();
+        while (it.hasNext()) {
+            RegisterClientModel next = it.next();
+            if (username.equals(next.getUsername()))
+                return true;
+        }
+        return false;
+    }
+
+    //Esta aqui deve ser usada para adicionar um novo user enquanto o programa corre, sem haver necessidade de reler o ficheiro (no método do protocolo registerUserJson)
+    public synchronized boolean addRegisteredUser(RegisterClientModel client){
+        if (isClientRegistered(client.getUsername()))
+            return false;
+        return registeredUsers.add(client);
+    }
+
     //Esta aqui deverá ser chamada no ínicio de cada "sessão" para carregar os que existem no ficheiro, carregando os utilizadores existentes na sua localização apenas
-    public synchronized void setRegisteredUsers(JsonElement file, String middleClientlocation){
+    public synchronized void setRegisteredUsers(JsonElement file){
         JsonArray utilizadores
                 = (file != null && file.isJsonArray()
                 ? file.getAsJsonArray() : new JsonArray());
@@ -27,65 +78,13 @@ public class UserTracking {
             int len = utilizadores.size();
             for (int i=0;i<len;i++){
                 JsonObject obj = utilizadores.get(i).getAsJsonObject();
-                if(middleClientlocation.equals(obj.get("location").getAsString())) {
-                    RegisterClientModel cum = new RegisterClientModel(obj.get("username").getAsString(), obj.get("password").getAsString(), obj.get("location").getAsString());
-                    registeredUsers.add(cum);
-                    registeredUsername.add(obj.get("username").getAsString());
-                }
+                RegisterClientModel cum = new RegisterClientModel(obj.get("username").getAsString(), obj.get("password").getAsString());
+                registeredUsers.add(cum);
             }
         }
-
-    }
-
-    //Esta aqui deve ser usada para adicionar um novo user enquanto o programa corre, sem haver necessidade de reler o ficheiro (no método do protocolo registerUserJson)
-    public synchronized boolean addRegisteredUser(JsonObject obj){
-        RegisterClientModel cum = new RegisterClientModel(obj.get("username").getAsString(), obj.get("password").getAsString(), obj.get("location").getAsString());
-        registeredUsers.add(cum);
-        return registeredUsername.add(obj.get("username").getAsString());
-    }
-
-    public synchronized boolean checkPassword(String password, String username){
-        for(int ix=0; ix<=registeredUsers.size(); ix++) {
-            if (username.equals(registeredUsers.get(ix).getUsername()))
-                return password.equals(registeredUsers.get(ix).getPassword());
-        }
-        return false;
     }
 
     public Iterator<RegisterClientModel> getAllUsers(){
         return  registeredUsers.iterator();
     }
-
-    public synchronized boolean checkUserClear(String username){
-        for(int ix=0; ix<=registeredUsername.size(); ix++){
-            if(username.equals(registeredUsername.get(ix)))
-                return false;
-        }
-        return true;
-    }
-
-    /**
-     * Adds 
-     * 
-     * @param user 
-     * @return 
-     */
-    public synchronized boolean loginUser(String user) {
-        return loggedUsers.add(user);
-    }
-
-    /**
-     * Adds 
-     * 
-     * @param user 
-     * @return 
-     */
-    public synchronized boolean logoutUser(String user) {
-        return loggedUsers.remove(user);
-    }
-
-    public Iterator<String> getLoggedUsers() {
-        return loggedUsers.iterator();
-    }
-
 }

@@ -8,6 +8,11 @@ import java.net.*;
 /**
  * Thread que representa o decorrer de um evento. São enviadas por aqui
  * (cliente) relatórios relativos ao evento decorrente, para o Servidor
+ * 
+ * São enviados periodicamente relatorios para o servidor com o estado do evento,
+ * numero de notificados e tempo decorrido. Socket UDP.
+ * 
+ * UDP DatagramSocket que envia relatorios para o Servidor, até que este dê como terminado
  */
 public class SendReportsThread extends Thread {
 
@@ -28,12 +33,6 @@ public class SendReportsThread extends Thread {
 
     @Override
     public void run() {
-        /*
-         * São enviados periodicamente relatorios para o servidor com o estado do evento,
-         * numero de notificados e tempo decorrido. Socket UDP.
-         * 
-         * UDP DatagramSocket que envia relatorios para o Servidor, até que este dê como terminado
-         */
         while(!Thread.interrupted()) {
             try {
                 Thread.sleep(REPORT_SEND_TIMER);
@@ -61,7 +60,8 @@ public class SendReportsThread extends Thread {
 
     private String logInformation(){
         float currentelapsedtime = System.nanoTime() - eventModel.getInitime();
-        return "Name: "+eventModel.getName() + ", ID:" + eventModel.getId() + ", Identified personel: "+eventModel.getNotifiedcount() + " Current Time: "+ currentelapsedtime;
+        return "Name: " + eventModel.getName() + ", ID:" + eventModel.getId() + ", Identified personel: "
+                        + eventModel.getNotifiedcount() + " Current Time: " + currentelapsedtime;
     }
   
     private String finalLogInfo(){

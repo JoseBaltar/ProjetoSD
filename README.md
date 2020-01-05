@@ -5,7 +5,7 @@ Sistema Distribuido à base de sockets em Java para Aviso de Catástrofes
 
 - 1º criar uma diretoria "bin" na diretoria mãe do projeto "/ProjetoSD"
 
-- 2º abrir a linha de comandos e escrever o seguinte
+- 2º abrir a linha de comandos (powershell pode nao funcionar) e escrever o seguinte
 
     > cd your_path_to_directory/ProjetoSD/src
 
@@ -13,18 +13,18 @@ Sistema Distribuido à base de sockets em Java para Aviso de Catástrofes
 
     *MainServer*
 
-    > javac -d ../bin server/*.java server/utils/*.java
+    > javac -d ../bin -cp ../resources/gson-2.8.5 server/*.java server/utils/*.java
 
-    > java -cp ../bin server.MainServer
+    > java -cp ../resources/gson-2.8.5;../bin; server.MainServer
 
     *Middle-Client*
 
-    > javac -d ../bin middle_client/*.java middle_client/utils/*.java
+    > javac -d ../bin -cp ../resources/gson-2.8.5 middle_client/*.java middle_client/utils/*.java
 
-    > java -cp ../bin middle_client.MiddleClient <\main_server_ip> <\main_server_port>
+    > java -cp ../resources/gson-2.8.5;../bin; middle_client.MiddleClient <\main_server_ip> <\main_server_port>
 
     *End-Client*
 
-    > javac -d ../bin client/*.java
+    > javac -d ../bin -cp ../resources/gson-2.8.5 client/*.java
 
-    > java -cp ../bin client.EndClient
+    > java -cp ../resources/gson-2.8.5;../bin; client.EndClient

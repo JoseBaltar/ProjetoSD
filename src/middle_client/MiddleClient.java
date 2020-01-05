@@ -1,5 +1,7 @@
 package middle_client;
 
+import com.google.gson.*;
+
 import java.io.*;
 import java.net.*;
 
@@ -21,9 +23,15 @@ public class MiddleClient {
     private static final String SEP = "\n----------\n";
     private static final String EXIT_INFO = SEP + "To close the connection to server write '%quit'." + SEP;
     private static final String EXIT_WARNING = SEP + "Connection with Server terminated!" + SEP;
+    
     private static final String LOGIN = SEP + "Successfully Logged In. Starting Services ..." + SEP;
     private static final String CLIENT_MESSAGE = "\nClient: ";
     private static final String SERVER_RESPONSE = "Server: ";
+
+    private static final String LISTENING_INFO = SEP + "Listening for Middle-Client Clients on port: ";
+    private static final String CLIENT_CONNECTED = SEP + "Client connected to Middle-Client Server! IP: ";
+
+    private static final String JSON_FILE_PATH = "../files/MiddleClientUsers.json";
 
     public static void main(String[] args) throws IOException {
         /** Check arguments */
@@ -49,6 +57,9 @@ public class MiddleClient {
             UserTracking userTracking = new UserTracking();
             EventTracking eventTracking = new EventTracking();
 
+            /** Instanciate all registered Users */
+            userTracking.setRegisteredLocations(loadFromJSONFile(JSON_FILE_PATH));
+
             /** Connect to main serverSocket, serverSocket.Server */
             try (
                 Socket mainServerConnection = new Socket(serverIP, serverPort);
@@ -59,27 +70,26 @@ public class MiddleClient {
                 BufferedReader stdIn = new BufferedReader(new InputStreamReader(System.in));
             ) {
                 boolean quit = false;
-                String userInput;
-                String serverOutput;
+                String userInput, serverOutput; // store input from user and output from protocol, respectively
+
                 System.out.print(EXIT_INFO + SERVER_RESPONSE + from_server.readLine() + CLIENT_MESSAGE);
-                /** Register and Login into Main Server before anything else */
                 while (!quit && (userInput = stdIn.readLine()) != null) {
-                    // terminate communication
+                    /** Register and Login into Main Server before anything else */
+
                     if (userInput.equals("%quit")) {
                         to_server.println(userInput);
                         System.out.println(EXIT_WARNING);
                         quit = true;
 
                     } else {
-                        // send input to server
-                        to_server.println(userInput);
-                        // get server output
-                        serverOutput = from_server.readLine();
+                        to_server.println(userInput); // send input to server
+                        serverOutput = from_server.readLine(); // get server output
+
                         if (serverOutput.equalsIgnoreCase("logged-in")) {
+                            /** Logged In, get server login data */
                             System.out.print(LOGIN);
 
-                            /** Logged In, get server login data */
-                            // get multicast IP and PORT  and the Name of this location
+                            // get multicast IP and PORT and the Name of this location
                             serverOutput = from_server.readLine();
                             int sep1 = serverOutput.indexOf(":", 0), sep2 = serverOutput.indexOf("/", sep1);
                             locationName = serverOutput.substring(0, sep1);
@@ -97,12 +107,13 @@ public class MiddleClient {
                             try (
                                 ServerSocket serverSocket = new ServerSocket(0)
                             ) {
-                                System.out.println(SEP + "Listening on Port " + serverSocket.getLocalPort() + " for Citizen Clients to connect." + SEP);
+                                System.out.print(LISTENING_INFO + serverSocket.getLocalPort() + SEP);
                                 Socket clientConnection;
                                 while (true) {
                                     clientConnection = serverSocket.accept();
                                     new MiddleClientCommunicationThread(locationName, clientConnection, to_server, 
                                                     multicastIP, multicastPort, eventTracking, userTracking).start();
+                                System.out.print(CLIENT_CONNECTED + clientConnection.getInetAddress() + "; PORT: " + clientConnection.getPort() + SEP);
                                 }
                             } catch (IOException e) {
                                 System.err.println("Could not listen with ServerSocket!");
@@ -123,5 +134,27 @@ public class MiddleClient {
                 // mainServerConnection.close(); // close socket
             }
         }
+    }
+
+    private static JsonElement loadFromJSONFile(String file_path) {
+        JsonElement json; // JsonElement correspondente ao ficheiro
+        try
+        { // Leitura do ficheiro e parse para uma instância de JsonElement
+            FileReader inputFile = new FileReader(file_path);
+
+            JsonParser parser = new JsonParser();
+            json = parser.parse(inputFile);
+
+        } catch (FileNotFoundException ex)
+        { // Retorna null se o ficheiro não existir
+            return null;
+        }
+
+        if (json.isJsonArray() && json.getAsJsonArray().size() == 0)
+        {
+            return null;
+        }
+
+        return json;
     }
 }

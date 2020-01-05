@@ -19,11 +19,11 @@ public class ServerCommunicationThread extends Thread {
     private ConnectionsTracking connectionsTracking;
     private MiddleClientLoginProtocol login_protocol;
 
-    ServerCommunicationThread(Socket clientConnection, UserTracking userTracking, ConnectionsTracking connectionsTracking) {
+    ServerCommunicationThread(Socket clientConnection, UserTracking userTracking, ConnectionsTracking connectionsTracking, String path) {
         super();
         this.clientConnection = clientConnection;
         this.connectionsTracking = connectionsTracking;
-        this.login_protocol = new MiddleClientLoginProtocol(connectionsTracking, userTracking);
+        this.login_protocol = new MiddleClientLoginProtocol(connectionsTracking, userTracking, path);
     }
 
     @Override
@@ -35,53 +35,53 @@ public class ServerCommunicationThread extends Thread {
         PrintWriter out = new PrintWriter(clientConnection.getOutputStream(), true);
         ) {
 
-            boolean quit = false;
-            String clientInp, processed;
+            boolean quit = false; // quit communication (client input)
+            String clientInp, processed; // store input from user and output from protocol, respectively
+            String[] locations; // store locations for sending warnings (format: "%s,%s", ip, port)
+            String clientUsername; // store clientUsername from login and logout notifications
+            String event, ip; int port; // store details about event notification received
 
-            String[] locations;
-            String event, ip, clientUsername; int port;
-
-            /** Register and Login Middle-Client */
             out.println(login_protocol.processInput(""));
             while (!quit && (clientInp = in.readLine()) != null) {
+                /** Register and Login Middle-Client */
+
                 if (clientInp.equalsIgnoreCase("%quit")) {
-                    // check if middle-client exited during login
+                    // Check if client exited during login
                     System.out.println("Client canceled the login. Terminating connection ...");
                     quit = true;
-                } else {
-                    // process client input through the protocol
-                    processed = login_protocol.processInput(clientInp);
-                    if (processed.equalsIgnoreCase("logged-in")) {
 
+                } else {
+                    processed = login_protocol.processInput(clientInp);
+
+                    if (processed.equalsIgnoreCase("logged-in")) {
                         /** Middle-Client Logged-In */
                         out.println(processed);
-                        // send locationName, multicast IP and Port to middle-client+
-                        out.println(login_protocol.getLocationName() + ":230.0.0.1/6000");
-                        // out.println(login_protocol.getLocationName() + ":" + login_protocol.getMulticastAddress());
-                        // get extra information from middle-client, about listening socket port, to enable sending occurence notifications
+                        // send locationName, multicast IP and Port to middle-client
+                        // out.println(login_protocol.getLocationName() + ":230.0.0.1/6000"); // for testing
+                        out.println(login_protocol.getLocationName() + ":" + login_protocol.getMulticastAddress());
+                        // get extra information from middle-client to enable sending occurence notifications
                         login_protocol.processInput(in.readLine()); // GET_CLIENT_LISTENING_PORT main_state no protocolo
 
-                        /** Start processing Middle-Client requests, redirected from End-Client*/
                         while ((clientInp = in.readLine()) != null) {
+                            /** Start processing End-Client requests, redirected by Middle-Client */
 
                             if (clientInp.startsWith("%login")) {
                                 clientUsername = clientInp.substring(clientInp.indexOf(":") + 1);
-                                /** When a client logs in into this Location, save it into shared object */
+                                /** When a client logs in into this Location, save it */
                                 System.out.println("\n\nTEST: receive login notification from Middle-Client, check. Username: " + clientUsername);
 
                             } else if (clientInp.startsWith("%logout")) {
                                 clientUsername = clientInp.substring(clientInp.indexOf(":") + 1);
-                                /** When a client logs out from this Location, update shared object */
+                                /** When a client logs out from this Location, update it */
                                 System.out.println("\n\nTEST: receive logout notification from Middle-Client, check. Username: " + clientUsername);
 
                             } else {
                                 /** Process notification sent by client: location:location;danger-degree;description */
                                 processed = processEvent(clientInp);
                                 System.out.println("\n\nTEST: receive event notification from Middle-Client, check. Notification: " + clientInp);
-                                // the method return one of the following: in-progress or create-event
+
                                 if (processed.startsWith("create-event")) {
                                     /** Execute server actions on a new event */
-
                                     // notify every location specified - open a ReceiveReportsThread for every one of them
                                     event = processed.substring(processed.indexOf("?") + 1, processed.indexOf(";")); // get event details
                                     locations = processed.substring(processed.indexOf(";") + 1).split(":"); // get locations

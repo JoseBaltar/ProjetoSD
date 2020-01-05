@@ -62,21 +62,23 @@ public class MiddleClientCommunicationThread extends Thread {
         // Output to Client
         PrintWriter out_cli = new PrintWriter(clientConnection.getOutputStream(), true);
         ) {
-            /** Register and Login End-Client */
             boolean quit = false;
             String clientInp, processed;
 
             out_cli.println(login_protocol.processInput("")); // send first message to Client
             while (!quit && (clientInp = in_cli.readLine()) != null) {
+                /** Register and Login End-Client */
+
                 if (clientInp.equalsIgnoreCase("%quit")) {
-                    /** Check if client exited during login */
+                    // Check if client exited during login
                     System.out.println(DISPLAY + LOGIN_CANCEL);
                     quit = true;
+
                 } else {
-                    /** Process client input through the protocol */
                     processed = login_protocol.processInput(clientInp);
 
                     if (processed.equalsIgnoreCase("logged-in")) {
+                        /** Client Logged In */
                         out_cli.println(processed);
                         System.out.println(SEP + DISPLAY + LOGIN);
                         out_cli.println(LOGIN);
@@ -85,18 +87,17 @@ public class MiddleClientCommunicationThread extends Thread {
                         // notify server of client login on this location
                         outMainServer.println("%login:" + login_protocol.getLoginUsername());
                         
-                        /** Client Logged-In, start receiving event notifications */
                         System.out.println(DISPLAY + PROCESSING);
                         out_cli.println(notification_protocol.processInput(""));
                         while (!quit && (clientInp = in_cli.readLine()) != null) {
+                            /** Start receiving event notifications */
 
                             if (clientInp.equalsIgnoreCase("%logout")) {
-                                /** Check if client logged out. Stop communication with this server */
+                                /** Client Logged Out. Finish communication Thread */
                                 // notify server of client logout on this location
                                 outMainServer.println("%logout:" + login_protocol.getLoginUsername());
-                                // notify client of successfull logout
-                                out_cli.println(LOGOUT);
                                 System.out.println(DISPLAY + LOGOUT + SEP);
+                                out_cli.println(LOGOUT);
                                 quit = true;
 
                             } else {
@@ -131,127 +132,4 @@ public class MiddleClientCommunicationThread extends Thread {
             System.err.print(SEP + "Server connection is down! Terminating ..." + SEP);
         }
     }
-
-    /*
-    /** Process server output through Protocol /
-    processed = notification_protocol.processInput(in_srv.readLine());
-
-    // ... check processed, or not
-    out_cli.println(processed);
-
-    // NOTA: esta parte poderia estar a ser feita pelo protocolo. Só não tenho a certeza disso ainda.
-    // processed = notification_protocol.processInput(clientInp);
-    // Mas parece pouca coisa para criar um protocolo só para isto. 
-    // Pode-me estar a falhar alguma coisa no entanto.
-
-    /** Process server output 
-     * - a string representing an array of strings separated by ","
-     * with all response details
-     /
-    response = in_srv.readLine().split(",");
-
-    if (response[0].equals("invalid-data")) {
-        /** Invalid data - [1] data details /
-        // notify client about the data
-        out_cli.println("Invalid Notification Data! Details: " + response[1]);
-
-    } else if (response[0].equals("in-progress")) {
-        /** Notification relates to an already in progress event
-         * [1] socket port /
-
-        // reenviar a notificação?
-        // avisar o cliente que o evento ja foi notificado?
-        // falta decidir ...
-        out_cli.println("Request sent and processed successfully!");
-
-    } else {
-        /**
-         * New Event, nothing else is needed because thread "WaitOccurrenceThread" handles that.
-         * Though, something has to be returned to the client still
-         /
-        out_cli.println("Request sent and processed successfully!");
-
-    }
-    */
-    /*
-    if (processed.startsWith("findUserLogin")) {
-        /** When username and password exist, check for other login from same user /
-
-        // request server for login check
-        outMainServer.println("%" + processed); // returns the location name if true
-        // send server response to protocol
-        processed = login_protocol.processInput(in_srv.readLine()); 
-
-        if (processed.equalsIgnoreCase("logged-in")) {
-            out_cli.println(processed);
-            // send extra information to client, about the multicast connection
-            out_cli.println(multicastIPAddress + ":" + multicastPort);
-            // notify server of client login on this location
-            outMainServer.println("%login:" + login_protocol.getLoginUsername());
-            
-            /** Client Logged-In, start receiving event notifications /
-            out_cli.println(notification_protocol.processInput(""));
-            while (!quit && (clientInp = in_cli.readLine()) != null) {
-
-                if (clientInp.equalsIgnoreCase("%logout")) {
-                    /** Check if client logged out. Stop communication with this server /
-                    // notify server of client logout on this location
-                    outMainServer.println("%logout:" + login_protocol.getLoginUsername());
-                    // notify client of successfull logout
-                    out_cli.println("Successfully Logged Out ...");
-                    quit = true;
-                } else {
-
-                    /** Redirect client input into main server /
-                    outMainServer.println(clientInp);
-
-                    /** Process server output through Protocol /
-                    processed = notification_protocol.processInput(in_srv.readLine());
-
-                    // ... check processed, or not
-                    out_cli.println(processed);
-
-                    // NOTA: esta parte poderia estar a ser feita pelo protocolo. Só não tenho a certeza disso ainda.
-                    // processed = notification_protocol.processInput(clientInp);
-                    // Mas parece pouca coisa para criar um protocolo só para isto. 
-                    // Pode-me estar a falhar alguma coisa no entanto.
-                    // TODO resolver esta situação
-
-                    /** Process server output 
-                     * - a string representing an array of strings separated by ","
-                     * with all response details
-                     /
-                    response = in_srv.readLine().split(",");
-
-                    if (response[0].equals("invalid-data")) {
-                        /** Invalid data - [1] data details /
-                        // notify client about the data
-                        out_cli.println("Invalid Notification Data! Details: " + response[1]);
-
-                    } else if (response[0].equals("in-progress")) {
-                        /** Notification relates to an already in progress event
-                         * [1] socket port /
-
-                        // reenviar a notificação?
-                        // avisar o cliente que o evento ja foi notificado?
-                        // falta decidir ...
-                        out_cli.println("Request sent and processed successfully!");
-
-                    } else {
-                        /**
-                         * New Event, nothing else is needed because thread "WaitOccurrenceThread" handles that.
-                         * Though, something has to be returned to the client still
-                         /
-                        out_cli.println("Request sent and processed successfully!");
-                
-                    }
-                }
-
-            } /** notification processing cicle /
-        
-        } else {
-            out_cli.println(processed);
-        }
-    }
-*/
 }
