@@ -9,16 +9,22 @@ Sistema Distribuido à base de sockets em Java para Aviso de Catástrofes
 
     > cd your_path_to_directory/ProjetoSD/src
 
-- 3º executar cada um dos componentes, Server, Middle-Client e Final-Client
+- 3º - executar cada um dos componentes
 
-    > javac -d bin src/server/*.java src/server/utils/*.java
+    *MainServer*
 
-    > java -cp bin server.Server
+    > javac -d ../bin server/*.java server/utils/*.java
 
-    > javac -d bin src/middle_client/*.java src/middle_client/utils/*.java
+    > java -cp ../bin server.MainServer
 
-    > java -cp bin middle_client.CivilProtection
+    *Middle-Client*
 
-    > javac -d bin src/client/*.java src/client/utils/*.java
+    > javac -d ../bin middle_client/*.java middle_client/utils/*.java
 
-    > java -cp bin client.Citizen
+    > java -cp ../bin middle_client.MiddleClient <\main_server_ip> <\main_server_port>
+
+    *End-Client*
+
+    > javac -d ../bin client/*.java
+
+    > java -cp ../bin client.EndClient

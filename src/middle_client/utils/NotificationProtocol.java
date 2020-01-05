@@ -1,11 +1,11 @@
-package server.utils;
+package middle_client.utils;
 
 /**
  * TODO
  */
-public class ServerEventNotificationProtocol {
+public class NotificationProtocol {
     private static enum MainStates {
-        DUMMY
+        DUMMY, LOGOUT
     };
 
     private static enum SecStates {
@@ -21,15 +21,19 @@ public class ServerEventNotificationProtocol {
         String theOutput = null;
 
         // Check special inputs
-        if (theInput.equals("%dummy")) {
-            main_state = MainStates.DUMMY;
+        if (theInput.equals("%logout")) {
+            main_state = MainStates.LOGOUT;
             sec_state = SecStates.NOT_DEFINED;
         }
 
         if (dummy) {
 
-        } else if (main_state == MainStates.DUMMY) {
+            
 
+        } else if (main_state == MainStates.LOGOUT) {
+            if (sec_state == SecStates.NOT_DEFINED) {
+                
+            }
         } else {
             // more ...
         }
