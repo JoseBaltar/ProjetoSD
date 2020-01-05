@@ -32,7 +32,7 @@ public class UserTracking {
         return loggedUsers.iterator();
     }
 
-    public boolean isClientLogged(String username) {
+    public synchronized boolean isClientLogged(String username) {
         return loggedUsers.contains(username);
     }
 
@@ -52,7 +52,7 @@ public class UserTracking {
         return true;
     }
 
-    public boolean isClientRegistered(String username) {
+    public synchronized boolean isClientRegistered(String username) {
         Iterator<RegisterClientModel> it = registeredUsers.iterator();
         while (it.hasNext()) {
             RegisterClientModel next = it.next();
@@ -70,7 +70,7 @@ public class UserTracking {
     }
 
     //Esta aqui deverá ser chamada no ínicio de cada "sessão" para carregar os que existem no ficheiro, carregando os utilizadores existentes na sua localização apenas
-    public synchronized void setRegisteredUsers(JsonElement file){
+    public void setRegisteredUsers(JsonElement file){
         JsonArray utilizadores
                 = (file != null && file.isJsonArray()
                 ? file.getAsJsonArray() : new JsonArray());
@@ -78,10 +78,11 @@ public class UserTracking {
             int len = utilizadores.size();
             for (int i=0;i<len;i++){
                 JsonObject obj = utilizadores.get(i).getAsJsonObject();
-                RegisterClientModel cum = new RegisterClientModel(obj.get("username").getAsString(), obj.get("password").getAsString());
-                registeredUsers.add(cum);
+                RegisterClientModel rcm = new RegisterClientModel(obj.get("username").getAsString(), obj.get("password").getAsString());
+                registeredUsers.add(rcm);
             }
         }
+        System.out.println("\n\nALREADY REGISTERED: " + registeredUsers.toString());
     }
 
     public Iterator<RegisterClientModel> getAllUsers(){

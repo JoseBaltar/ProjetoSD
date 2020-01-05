@@ -24,8 +24,8 @@ public class ClientLoginProtocol {
     private String location; /** Location name of the Server using an instance of this Protocol */
     private String username = ""; /** Client username input */
 
-    private String registerPassword = ""; /** Client password input */
-    private String registerUsername; /** Username of a registered Client - used for verification */
+    private String registerPassword; /** Client password input */
+    private String registerUsername = ""; /** Username of a registered Client - used for verification */
     private UserTracking userTracking; /** Shared Object that manages client users */
 
     public ClientLoginProtocol(String location, UserTracking userTracking, String path) {
@@ -120,10 +120,10 @@ public class ClientLoginProtocol {
                 } else {
                     /** Register Client */
                     if (registerUserJson()) {
-                        theOutput = "User " + registerUsername + ", registered successfully! Back to Login. Enter a Username.";
+                        theOutput = "Registered user, " + registerUsername + ",  successfully! Back to Login. Enter a Username.";
                         main_state = MainStates.CHECK_LOGIN;
                     } else {
-                        theOutput = "User is already registered! Enter a Location name. (To go back to Login page type %cancel!)";
+                        theOutput = "User is already registered! Enter a new Username. (To go back to Login page type %cancel!)";
                     }
                     sec_state = SecStates.GET_USERNAME;
 
@@ -143,20 +143,24 @@ public class ClientLoginProtocol {
         return username;
     }
 
+    public String getLastRegisteredUsername() {
+        return registerUsername;
+    }
+
     /**
      * @return False if it fails writing to the file, true if succeeds
      *
      * This method rewrites the json file by adding a new entry to it
      * It creats a JSON Object with several Properties associated, to which it will add to a JSON array with the old entries, which will then be written
      */
-    public boolean registerUserJson() {
+    public synchronized boolean registerUserJson() {
 
         RegisterClientModel client = new RegisterClientModel(registerUsername, registerPassword);
 
         if (userTracking.addRegisteredUser(client)) {
             Gson gson = new Gson(); // Instância gson para escrever o ficheiro Json
             File pathf = new File(JSON_FILE_PATH); // Ficheiro de destino
-            JsonElement file = this.loadUsersFromJSONFile(JSON_FILE_PATH);
+            JsonElement file = loadFromJSONFile(JSON_FILE_PATH);
             JsonArray utilizadores
                     = (file != null && file.isJsonArray()
                     ? file.getAsJsonArray() : new JsonArray());
@@ -184,7 +188,7 @@ public class ClientLoginProtocol {
      *
      * It creates a JsonElement to be parsed into a JsonArray in order to be accessible for further use
      */
-    public JsonElement loadFromJSONFile(String file_path) {
+    public synchronized JsonElement loadFromJSONFile(String file_path) {
         JsonElement json; // JsonElement correspondente ao ficheiro
         try
         { // Leitura do ficheiro e parse para uma instância de JsonElement
@@ -209,7 +213,7 @@ public class ClientLoginProtocol {
     //Em ficheiro TXT,
     @Deprecated
     public String registerUser() {
-        String userdata = username + ";" + password + "; \n";
+        String userdata = registerUsername + ";" + registerPassword + "; \n";
         try (Writer writer = new BufferedWriter(new OutputStreamWriter(
                 new FileOutputStream("userfile.txt"), "utf-8"))) {
             writer.write(userdata);

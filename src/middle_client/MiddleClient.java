@@ -58,7 +58,7 @@ public class MiddleClient {
             EventTracking eventTracking = new EventTracking();
 
             /** Instanciate all registered Users */
-            userTracking.setRegisteredLocations(loadFromJSONFile(JSON_FILE_PATH));
+            userTracking.setRegisteredUsers(loadFromJSONFile(JSON_FILE_PATH));
 
             /** Connect to main serverSocket, serverSocket.Server */
             try (
@@ -88,20 +88,24 @@ public class MiddleClient {
                         if (serverOutput.equalsIgnoreCase("logged-in")) {
                             /** Logged In, get server login data */
                             System.out.print(LOGIN);
-
+                            
                             // get multicast IP and PORT and the Name of this location
                             serverOutput = from_server.readLine();
                             int sep1 = serverOutput.indexOf(":", 0), sep2 = serverOutput.indexOf("/", sep1);
                             locationName = serverOutput.substring(0, sep1);
                             multicastIP = serverOutput.substring(sep1 + 1, sep2);
                             multicastPort = Integer.parseInt(serverOutput.substring(sep2 + 1));
-                            // create thread for listening to server notifications
-                            waitOccurrenceThread = new WaitOccurrenceThread(multicastIP, multicastPort, eventTracking);
+                            try {
+                                // create thread for listening to server notifications
+                                waitOccurrenceThread = new WaitOccurrenceThread(multicastIP, multicastPort, eventTracking);
+                                /** Start listening for Server Ocurrence notifications */
+                                waitOccurrenceThread.start();
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            }
+
                             // send extra information to server, about the waitOccurrencePort, enabling the server to notify this Middle-Client
                             to_server.println(waitOccurrenceThread.getSocketPort());
-
-                            /** Start listening for Server Ocurrence notifications */
-                            waitOccurrenceThread.start();
 
                             /** Wait and Process client connections */
                             try (
@@ -112,7 +116,7 @@ public class MiddleClient {
                                 while (true) {
                                     clientConnection = serverSocket.accept();
                                     new MiddleClientCommunicationThread(locationName, clientConnection, to_server, 
-                                                    multicastIP, multicastPort, eventTracking, userTracking).start();
+                                                    multicastIP, multicastPort, eventTracking, userTracking, JSON_FILE_PATH).start();
                                 System.out.print(CLIENT_CONNECTED + clientConnection.getInetAddress() + "; PORT: " + clientConnection.getPort() + SEP);
                                 }
                             } catch (IOException e) {
@@ -127,8 +131,7 @@ public class MiddleClient {
                 }
 
             } catch (IOException e) {
-                System.err.println("Couldn't get I/O for the connection.");
-                e.printStackTrace();
+                System.err.println("Couldn't get I/O for the connection. Server may be shut down!");
             } finally {
                 if (waitOccurrenceThread != null) waitOccurrenceThread.interrupt(); // close thread
                 // mainServerConnection.close(); // close socket

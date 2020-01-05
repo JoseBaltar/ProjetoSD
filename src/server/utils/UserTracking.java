@@ -15,17 +15,17 @@ public class UserTracking {
         loggedClients = new ArrayList<>();
     }
 
-    public synchronized boolean loginMiddleClient(String location){
-        MiddleClientModel mcm = (MiddleClientModel) this.getRegisteredMiddleClient(location);
+    public synchronized boolean loginMiddleClient(String locationName){
+        MiddleClientModel mcm = (MiddleClientModel) this.getRegisteredMiddleClient(locationName);
         if (mcm == null)
             return false; 
         return loggedClients.add(mcm);
     }
 
-    public synchronized boolean logoutMiddleClient(String location){
-        MiddleClientModel mcm = this.getLoggedMiddleClient(location);
+    public synchronized boolean logoutMiddleClient(String locationName){
+        MiddleClientModel mcm = this.getLoggedMiddleClient(locationName);
         if (mcm == null)
-            return false; 
+            return false;
         return loggedClients.remove(mcm);
     }
 
@@ -43,9 +43,13 @@ public class UserTracking {
         return null;
     }
 
-    public synchronized boolean checkPassword(String password, String location){
+    public synchronized boolean isMiddleClientLogged(String locationName) {
+        return (getLoggedMiddleClient(locationName) != null ? true : false);
+    }
+
+    public synchronized boolean checkPassword(String password, String locationName){
         for(int ix=0; ix<registeredClients.size(); ix++) {
-            if (location.equals(registeredClients.get(ix).getLocationName()))
+            if (locationName.equals(registeredClients.get(ix).getLocationName()))
                 return password.equals(registeredClients.get(ix).getPassword());
         }
         return false;
@@ -67,6 +71,10 @@ public class UserTracking {
                 return (MiddleClientModel) next;
         }
         return null;
+    }
+
+    public synchronized boolean isMiddleClientRegistered(String locationName) {
+        return (getRegisteredMiddleClient(locationName) != null ? true : false);
     }
 
     //it does the same as the Middle_Client version of this class
@@ -95,6 +103,14 @@ public class UserTracking {
             }
         }
 
+    }
+
+    public synchronized ArrayList<String> getAllRegisteredMulticastAddress() {
+        ArrayList<String> list = new ArrayList<>();
+        Iterator<RegisterClientModel> it = registeredClients.iterator();
+        while (it.hasNext())
+            list.add(it.next().getMulticastAddress());
+        return list;
     }
 
     public Iterator<RegisterClientModel> getAllRegisteredClientsIterator(){

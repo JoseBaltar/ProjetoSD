@@ -13,6 +13,7 @@ public class MiddleClientModel {
         this.locationName = locationName;
         this.multicastAddress = multicastAddress;
         this.registeredUsers = registeredUsers;
+        this.currentlyLoggedUsers = new ArrayList<>();
     }
 
     public String getLocationName() {
@@ -23,27 +24,28 @@ public class MiddleClientModel {
         return multicastAddress;
     }
 
-    public boolean addLoggedUser(String username) {
+    public synchronized boolean addLoggedUser(String username) {
         if (currentlyLoggedUsers.contains(username) || !registeredUsers.contains(username)) {
             return false;
         }
         return currentlyLoggedUsers.add(username);
     }
 
-    public boolean removeLoggedUser(String username) {
+    public synchronized boolean removeLoggedUser(String username) {
         return currentlyLoggedUsers.remove(username);
+    }
+
+    public synchronized boolean addRegisteredUser(String username) {
+        if (registeredUsers.contains(username)) {
+            return false;
+        }
+        return registeredUsers.add(username);
     }
 
     public Iterator<String> getLoggedUsersIterator() {
         return currentlyLoggedUsers.iterator();
     }
 
-    public boolean addRegisteredUser(String username) {
-        if (registeredUsers.contains(username)) {
-            return false;
-        }
-        return registeredUsers.add(username);
-    }
 
     public Iterator<String> getRegisteredUsersIterator() {
         return registeredUsers.iterator();

@@ -25,7 +25,7 @@ public class WaitOccurrenceThread extends Thread {
         super();
         this.eventTracking = eventTracking;
         this.listeningSocket = new DatagramSocket(); // socket for listening to server notifications
-        this.broadcastSocket = new DatagramSocket(65535); // this socket port is obsolete since nothing is getting sent to it
+        this.broadcastSocket = new DatagramSocket(); // this socket port is obsolete since nothing is getting sent to it
     }
 
     WaitOccurrenceThread(String multicastIPAddress, int multicastPort, EventTracking eventTracking) throws SocketException {
@@ -34,7 +34,7 @@ public class WaitOccurrenceThread extends Thread {
         this.multicastPort = multicastPort;
         this.eventTracking = eventTracking;
         this.listeningSocket = new DatagramSocket(); // socket for listening to server notifications
-        this.broadcastSocket = new DatagramSocket(65535); // this socket port is obsolete since nothing is getting sent to it
+        this.broadcastSocket = new DatagramSocket(); // this socket port is obsolete since nothing is getting sent to it
     }
 
     @Override

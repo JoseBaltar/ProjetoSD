@@ -90,7 +90,7 @@ public class MiddleClientLoginProtocol {
                 if (theInput.length() < 3 || theInput.length() > 30) {
                     theOutput = "Location name must be within 3 and 30 characters. Enter a new name.";
 
-                } else if (userTracking.getRegisteredMiddleClient(theInput) != null) {
+                } else if (userTracking.isMiddleClientRegistered(theInput)) {
                     theOutput = "Location already exists. Write a new name or %cancel to go back to Login!";
 
                 } else {
@@ -160,7 +160,7 @@ public class MiddleClientLoginProtocol {
         return this.multicastAddress;
     }
     
-    public boolean registerMiddleClient() {
+    private boolean registerMiddleClient() {
         RegisterClientModel client = 
             new RegisterClientModel(registeredPassword, registeredName, registeredMulticastAddress, new ArrayList<>());
 
@@ -193,7 +193,7 @@ public class MiddleClientLoginProtocol {
         return false;
     }
 
-    public JsonElement loadFromJSONFile(String file_path) {
+    private JsonElement loadFromJSONFile(String file_path) {
         JsonElement json; // JsonElement correspondente ao ficheiro
         try
         { // Leitura do ficheiro e parse para uma instância de JsonElement

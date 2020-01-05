@@ -1,7 +1,10 @@
 package server;
 
+import com.google.gson.*;
+
 import java.io.*;
 import java.net.Socket;
+import java.util.Iterator;
 
 import server.utils.ConnectionsTracking;
 import server.utils.MiddleClientLoginProtocol;
@@ -13,16 +16,32 @@ import server.utils.UserTracking;
  * Lança a thread "ReceiveReportsThread" no despoletar de um evento para a receção de relatórios (socket UDP).
  */
 public class ServerCommunicationThread extends Thread {
+    private String DISPLAY = "\nMain-Server: ";
+    private static final String SEP = "\n==========\n";
+    private static final String LOGIN_CANCEL = "Client canceled the login. Terminating connection ...";
+    private static final String PROCESSING = "Processing Middle-Client inputs ...";
+    private static final String FINISH = "Client disconnected! Terminating ... ";
+
+    private static final String LOGIN = "Process End-Client login notification from Middle-Client!";
+    private static final String LOGOUT = "Process End-Client logout notification from Middle-Client!";
+    private static final String REGISTER = "Process End-Client register notification from Middle-Client!";
 
     private Socket clientConnection;
+    private String JSON_FILE_PATH;
 
+    private UserTracking userTracking;
     private ConnectionsTracking connectionsTracking;
     private MiddleClientLoginProtocol login_protocol;
 
     ServerCommunicationThread(Socket clientConnection, UserTracking userTracking, ConnectionsTracking connectionsTracking, String path) {
         super();
         this.clientConnection = clientConnection;
+        this.DISPLAY = "\nMain-Server | Middle-Client:" + clientConnection.getInetAddress() + ":" + clientConnection.getPort() + ": ";
+
+        this.userTracking = userTracking;
         this.connectionsTracking = connectionsTracking;
+        this.JSON_FILE_PATH = path;
+
         this.login_protocol = new MiddleClientLoginProtocol(connectionsTracking, userTracking, path);
     }
 
@@ -38,7 +57,7 @@ public class ServerCommunicationThread extends Thread {
             boolean quit = false; // quit communication (client input)
             String clientInp, processed; // store input from user and output from protocol, respectively
             String[] locations; // store locations for sending warnings (format: "%s,%s", ip, port)
-            String clientUsername; // store clientUsername from login and logout notifications
+            String clientUsername, locationName; // store client usernames from login and logout notifications
             String event, ip; int port; // store details about event notification received
 
             out.println(login_protocol.processInput(""));
@@ -47,7 +66,7 @@ public class ServerCommunicationThread extends Thread {
 
                 if (clientInp.equalsIgnoreCase("%quit")) {
                     // Check if client exited during login
-                    System.out.println("Client canceled the login. Terminating connection ...");
+                    System.out.println(DISPLAY + LOGIN_CANCEL);
                     quit = true;
 
                 } else {
@@ -57,23 +76,42 @@ public class ServerCommunicationThread extends Thread {
                         /** Middle-Client Logged-In */
                         out.println(processed);
                         // send locationName, multicast IP and Port to middle-client
-                        // out.println(login_protocol.getLocationName() + ":230.0.0.1/6000"); // for testing
-                        out.println(login_protocol.getLocationName() + ":" + login_protocol.getMulticastAddress());
+                        locationName = login_protocol.getLocationName();
+                        out.println(locationName + ":" + login_protocol.getMulticastAddress());
                         // get extra information from middle-client to enable sending occurence notifications
                         login_protocol.processInput(in.readLine()); // GET_CLIENT_LISTENING_PORT main_state no protocolo
 
+                        System.out.println(DISPLAY + PROCESSING);
                         while ((clientInp = in.readLine()) != null) {
                             /** Start processing End-Client requests, redirected by Middle-Client */
 
-                            if (clientInp.startsWith("%login")) {
+                            if (clientInp.startsWith("%register")) {
                                 clientUsername = clientInp.substring(clientInp.indexOf(":") + 1);
-                                /** When a client logs in into this Location, save it */
-                                System.out.println("\n\nTEST: receive login notification from Middle-Client, check. Username: " + clientUsername);
+                                /** When a client is registered, save it in file and Data Structure */
+                                System.out.println(DISPLAY + REGISTER);
+                                if (addRegisteredMiddleClientUserToFile(clientUsername, locationName)
+                                    && userTracking.getLoggedMiddleClient(locationName).addRegisteredUser(clientUsername))
+                                    System.out.println("Operation Successful!");
+                                else
+                                    System.out.println("WARNING - Couldn't add registered User!");
+
+                            } else if (clientInp.startsWith("%login")) {
+                                clientUsername = clientInp.substring(clientInp.indexOf(":") + 1);
+                                /** When a client logs in into this Location Client, save it into Data Structure */
+                                System.out.println(DISPLAY + LOGIN);
+                                if (userTracking.getLoggedMiddleClient(locationName).addLoggedUser(clientUsername))
+                                    System.out.println("Operation Successful!");
+                                else
+                                    System.out.println("WARNING - Couldn't add logged User!");
 
                             } else if (clientInp.startsWith("%logout")) {
                                 clientUsername = clientInp.substring(clientInp.indexOf(":") + 1);
-                                /** When a client logs out from this Location, update it */
-                                System.out.println("\n\nTEST: receive logout notification from Middle-Client, check. Username: " + clientUsername);
+                                /** When a client logs out from this Location Client, update it Data Structure */
+                                System.out.println(DISPLAY + LOGOUT);
+                                if (userTracking.getLoggedMiddleClient(locationName).removeLoggedUser(clientUsername))
+                                    System.out.println("Operation Successful!");
+                                else
+                                    System.out.println("WARNING - Couldn't remove logged User!");
 
                             } else {
                                 /** Process notification sent by client: location:location;danger-degree;description */
@@ -113,7 +151,7 @@ public class ServerCommunicationThread extends Thread {
             } /** client login cicle */
         
         } catch (IOException e) {
-            System.out.println("Client disconnected! Terminating ... ");
+            System.out.println(SEP + FINISH + SEP);
         }
     }
 
@@ -151,5 +189,59 @@ public class ServerCommunicationThread extends Thread {
     private void sendOcurrenceWarning(String event, String ip, int port, int serverListeningPort) {
         // UDP DatagramSocket para enviar o evento para o Middle-Client
         // arranjar melhor maneira de verificar se a localização recebeu a notificação
+    }
+    
+    private boolean addRegisteredMiddleClientUserToFile(String username, String locationName) {
+        Gson gson = new Gson(); // Instância gson para escrever o ficheiro Json
+        File pathf = new File(JSON_FILE_PATH); // Ficheiro de destino
+        JsonElement file = loadFromJSONFile(JSON_FILE_PATH);
+        JsonArray locations
+                = (file != null && file.isJsonArray()
+                ? file.getAsJsonArray() : null);
+        
+        if (locations == null) return false;
+
+        Iterator<JsonElement> it = locations.iterator();
+        JsonObject location = null; JsonArray users; int i = 0;
+        while (it.hasNext()) {
+            location = it.next().getAsJsonObject();
+            if (locationName.equals(location.get("locationName").getAsString())) {
+                users = location.get("registeredUsers").getAsJsonArray();
+                users.add(locationName);
+                location.add("registeredUsers", users);
+            } else {
+                i++;
+            }
+        }
+
+        if (location == null) return false;
+
+        locations.set(i, location);
+
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(pathf))) {
+            writer.write(gson.toJson(locations));
+            writer.flush();
+        } catch (IOException ex) {
+            System.err.println("[" + ex.getClass().getName() + "] "
+                    + "Erro na escrita do ficheiro" );
+            return false;
+        }
+        return true;
+    }
+
+    private JsonElement loadFromJSONFile(String file_path) {
+        JsonElement json; // JsonElement correspondente ao ficheiro
+        try { 
+            // Leitura do ficheiro e parse para uma instância de JsonElement
+            FileReader inputFile = new FileReader(file_path);
+            JsonParser parser = new JsonParser();
+            json = parser.parse(inputFile);
+        } catch (FileNotFoundException ex) { 
+            return null;
+        }
+        if (json.isJsonArray() && json.getAsJsonArray().size() == 0)
+            return null;
+
+        return json;
     }
 }

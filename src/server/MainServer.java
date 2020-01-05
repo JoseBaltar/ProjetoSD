@@ -2,7 +2,7 @@ package server;
 
 import com.google.gson.*;
 
-import java.io.IOException;
+import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
 
@@ -23,10 +23,10 @@ public class MainServer {
 
         /** Shared Objects */
         UserTracking userTracking = new UserTracking();
-        ConnectionsTracking connectionsTracking = new ConnectionsTracking();
 
         /** Instanciate all registered Users */
-        userTracking.setRegisteredLocations(loadFromJSONFile(JSON_FILE_PATH));
+        userTracking.setRegisteredClients(loadFromJSONFile(JSON_FILE_PATH));
+        ConnectionsTracking connectionsTracking = ConnectionsTracking.newInstance(userTracking.getAllRegisteredMulticastAddress());
 
         /** Wait and Process client connections. */
         try (
