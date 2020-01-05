@@ -2,7 +2,9 @@ package server;
 
 import com.google.gson.*;
 
-import java.io.*;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 
@@ -23,10 +25,10 @@ public class MainServer {
 
         /** Shared Objects */
         UserTracking userTracking = new UserTracking();
+        ConnectionsTracking connectionsTracking = new ConnectionsTracking();
 
         /** Instanciate all registered Users */
         userTracking.setRegisteredClients(loadFromJSONFile(JSON_FILE_PATH));
-        ConnectionsTracking connectionsTracking = ConnectionsTracking.newInstance(userTracking.getAllRegisteredMulticastAddress());
 
         /** Wait and Process client connections. */
         try (

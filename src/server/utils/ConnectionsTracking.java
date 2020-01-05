@@ -12,6 +12,10 @@ public class ConnectionsTracking {
     private final int MAX_ADDRESS_COUNT = 255 * 255 * 254;
     private final int GENERIC_PORT = 65534; // this port can be the same for every location since the IP is what matters
 
+    public ConnectionsTracking() {
+
+    }
+
     /**
      * Create a new Instance of this class, checking and removing from the storedAddresses {@link java.util.ArrayList}
      * all invalid multicast IP addresses. <br/>
@@ -31,7 +35,7 @@ public class ConnectionsTracking {
         return new ConnectionsTracking(storedAddresses);
     }
 
-    private ConnectionsTracking(ArrayList<String> storedAddresses) {          
+    public ConnectionsTracking(ArrayList<String> storedAddresses) {
         this.activeMulticastAddresses = storedAddresses;
     }
 
