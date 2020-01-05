@@ -31,7 +31,7 @@ public class ConnectionsTracking {
         return new ConnectionsTracking(storedAddresses);
     }
 
-    private ConnectionsTracking(ArrayList<String> storedAddresses) {          
+    private ConnectionsTracking(ArrayList<String> storedAddresses) {
         this.activeMulticastAddresses = storedAddresses;
     }
 
