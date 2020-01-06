@@ -2,6 +2,7 @@ package server;
 
 import com.google.gson.*;
 
+import server.utils.RegisterClientModel;
 import server.utils.EventModel;
 
 import java.io.*;
@@ -14,6 +15,7 @@ import java.util.Iterator;
 import server.utils.ConnectionsTracking;
 import server.utils.EventTracking;
 import server.utils.MiddleClientLoginProtocol;
+import server.utils.MiddleClientModel;
 import server.utils.UserTracking;
 
 /**
@@ -31,6 +33,7 @@ public class ServerCommunicationThread extends Thread {
     private static final String LOGIN = "Process End-Client login notification from Middle-Client!";
     private static final String LOGOUT = "Process End-Client logout notification from Middle-Client!";
     private static final String REGISTER = "Process End-Client register notification from Middle-Client!";
+    private static final String INVALID_USER = "User is invalid! Only Middle-Client (Location) users allowed!";
 
     private Socket clientConnection;
     private String JSON_FILE_PATH;
@@ -61,6 +64,11 @@ public class ServerCommunicationThread extends Thread {
         // Output to Client
         PrintWriter out = new PrintWriter(clientConnection.getOutputStream(), true);
         ) {
+            if (!in.readLine().equals("?qweqweqweasdasdasd123654!")) {
+                out.println(INVALID_USER);
+                clientConnection.close();
+                return;
+            }
 
             boolean quit = false; // quit communication (client input)
             String clientInp, processed; // store input from user and output from protocol, respectively
@@ -181,12 +189,23 @@ public class ServerCommunicationThread extends Thread {
      */
     private String processEvent(String eventNotification) {
         System.out.println("\n\n\nEVENT NOTIFICATION: " + eventNotification);
-        String[] params = eventNotification.split(";"), locationNames = params[0].split(":");
+        String[] params = eventNotification.split(";"), locationNames = null;
         int degree = Integer.parseInt(params[1]);
         String description = params[2];
 
         String prefix = "create-event", eventDetails = "" + degree + "," + description, locations = "";
         
+        if (degree == 3) {
+            locationNames = new String[userTracking.getNumberLoggedClients()];
+            Iterator<MiddleClientModel> it = userTracking.getLoggedMiddleClientsIterator();
+            int i = 0;
+            while (it.hasNext()) {
+                locationNames[i] = it.next().getLocationName();
+            }
+        } else {
+            locationNames = params[0].split(":");
+        }
+
         for (String location : locationNames) {
             if (userTracking.isMiddleClientLogged(location)) {
                 // check if location is valid
@@ -205,6 +224,10 @@ public class ServerCommunicationThread extends Thread {
         if (locations.isEmpty())
             prefix = "in-progress";
         return prefix + "?" + eventDetails + ";" + locations;
+    }
+
+    private void addLoggedMiddleClientConnectionToWindow() {
+        // guardar numa variavel desta classe a JsonArea respetiva para escrever aqui
     }
 
     /**
@@ -235,6 +258,13 @@ public class ServerCommunicationThread extends Thread {
         }
     }
     
+    /**
+     * Adds an End-Client user who as been registered in Middle-Client into this Server database file.
+     * 
+     * @param username End-Client username
+     * @param locationName Middle-Client name
+     * @return true if success, false otherwise
+     */
     private boolean addRegisteredMiddleClientUserToFile(String username, String locationName) {
         Gson gson = new Gson(); // Instância gson para escrever o ficheiro Json
         File pathf = new File(JSON_FILE_PATH); // Ficheiro de destino
@@ -273,6 +303,12 @@ public class ServerCommunicationThread extends Thread {
         return true;
     }
 
+    /**
+     * Read a JSON file if JsonElement equals a JsonArray
+     * 
+     * @param file_path file path
+     * @return JsonElement instance representing the file
+     */
     private JsonElement loadFromJSONFile(String file_path) {
         JsonElement json; // JsonElement correspondente ao ficheiro
         try { 

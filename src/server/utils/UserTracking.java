@@ -29,8 +29,12 @@ public class UserTracking {
         return loggedClients.remove(mcm);
     }
 
-    public Iterator<MiddleClientModel> getLoggedMiddleClientIterator(){
+    public Iterator<MiddleClientModel> getLoggedMiddleClientsIterator(){
         return loggedClients.iterator();
+    }
+    
+    public int getNumberLoggedClients() {
+        return loggedClients.size();
     }
 
     public MiddleClientModel getLoggedMiddleClient(String locationName) {

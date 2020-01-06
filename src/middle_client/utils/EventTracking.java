@@ -12,33 +12,55 @@ public class EventTracking {
     }
 
     /**
-     * Adds an occurring event to the current ative event list of this Location.
+     * Adds an occurring event to the current ative event list.
      * 
-     * @param eventRelatedThread event instance that represents a currently active event
+     * @param event event instance that represents a currently active event
      * @return true if added, false otherwise
      */
     public synchronized boolean addActiveEvent(EventModel event) {
-        currentEvents.add(event);
-        return true;
+        return currentEvents.add(event);
     }
 
     /**
-     * Adds an occurring event to the current ative event list of this Location.
+     * Adds an occurring event to the current ative event list.
      * 
-     * @param eventd event instance that represents a currently active event
+     * @param event event instance that represents a currently active event
      * @return true if added, false otherwise
      */
     public synchronized boolean removeActiveEvent(EventModel event) {
-        currentEvents.remove(event);
-        return true;
+        return currentEvents.remove(event);
+    }
+
+    public synchronized EventModel getActiveEventBySeverity(int dangerDegree) {
+        Iterator<EventModel> it = currentEvents.iterator();
+        while (it.hasNext()) {
+            EventModel next = it.next();
+            if (dangerDegree == next.getSeverity())
+                return next;
+        }
+        return null;
+    }
+
+    public synchronized EventModel getActiveEvent(String id) {
+        Iterator<EventModel> it = currentEvents.iterator();
+        while (it.hasNext()) {
+            EventModel next = it.next();
+            if (id.equals(next.getId()))
+                return next;
+        }
+        return null;
+    }
+
+    public boolean isEventActive(int dangerDegree) {
+        return (getActiveEventBySeverity(dangerDegree) != null ? true : false);
     }
 
     /**
-     * Gets an Iterator over the current active events on this location.
+     * Gets an Iterator over the current active.
      * 
      * @return Iterator instace for the current active events list
      */
-    public Iterator<EventModel> getActiveEventsIterator() {
+    public Iterator<EventModel> getAllActiveEventsIterator() {
         return currentEvents.iterator();
     }
 

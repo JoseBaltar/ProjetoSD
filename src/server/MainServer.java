@@ -48,6 +48,17 @@ public class MainServer {
         }
     }
 
+    private void createConnectionListWindow() {
+        // lista com as conexão ao servidor e conexões de Middle-Clients
+        // envia o objeto da TextArea para a thread de comunicação para escrever 
+    }
+
+    /**
+     * Read a JSON file if JsonElement equals a JsonArray
+     * 
+     * @param file_path file path
+     * @return JsonElement instance representing the file
+     */
     private static JsonElement loadFromJSONFile(String file_path) {
         JsonElement json; // JsonElement correspondente ao ficheiro
         try

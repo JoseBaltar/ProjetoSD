@@ -34,6 +34,10 @@ public class UserTracking {
         return loggedUsers.iterator();
     }
 
+    public int getNumberLoggedUsers() {
+        return loggedUsers.size();
+    }
+
     public synchronized boolean isClientLogged(String username) {
         return loggedUsers.contains(username);
     }

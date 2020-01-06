@@ -40,7 +40,7 @@ public class EndClient {
         BufferedReader stdIn = new BufferedReader(new InputStreamReader(System.in));
         while (!exit) {
             try {
-                /** Connect to middle_client.CivilProtection server and start communications */
+                /** Connect to middle_client.MiddleClient server and start communications */
                 System.out.print(ASK_SERVER_INFO + ASK_SERVER_IP);
                 serverIP = stdIn.readLine();
                 System.out.print(ASK_SERVER_PORT);
@@ -54,76 +54,83 @@ public class EndClient {
                 ) {
 
                     quit = false;
-                    System.out.print(EXIT_INFO + SERVER_RESPONSE + from_server.readLine() + CLIENT_MESSAGE);
-                    while (!quit && (userInput = stdIn.readLine()) != null) {
-                        /** Register and Login into Middle-Client Server */
+                    to_server.println("!asdasdasdqweqweqwe654123?"); // notify server this is an End-Client
+                    serverOutput = from_server.readLine();
 
-                        if (userInput.equals("%quit")) {
-                            to_server.println(userInput);
-                            System.out.println(EXIT_WARNING);
-                            quit = true;
-                        } else {
-                            to_server.println(userInput); // send input to server
-                            serverOutput = from_server.readLine(); // get server response
+                    if (serverOutput.startsWith("Invalid User")) {
+                        System.out.println(SEP + from_server + SEP);
+                    } else {
+                        System.out.print(EXIT_INFO + SERVER_RESPONSE + from_server.readLine() + CLIENT_MESSAGE);
+                        while (!quit && (userInput = stdIn.readLine()) != null) {
+                            /** Register and Login into Middle-Client Server */
 
-                            if (serverOutput.equalsIgnoreCase("logged-in")) {
-                                /** Client Logged In */
-                                System.out.println(SERVER_RESPONSE + from_server.readLine());
-                                
-                                // Open thread for processing occurrence warnings
-                                serverOutput = from_server.readLine(); // get extra information from server
-                                separator = serverOutput.indexOf("/");
-                                multicastIP = serverOutput.substring(0, separator);
-                                multicastPort = Integer.parseInt(serverOutput.substring(separator + 1));
-                                notificationThread = new ReceiveNotificationThread(multicastIP, multicastPort);
-                                notificationThread.start();
-
-                                // Continue communication with the server. Send notifications.
-                                System.out.print(LOGOUT_INFO + SERVER_RESPONSE + from_server.readLine() + CLIENT_MESSAGE);
-                                while (!quit && (userInput = stdIn.readLine()) != null) {
-                                    /** Client - Middle_Client. Start receiving event notifications */
-
-                                    if (userInput.equals("%logout")) {
-                                        to_server.println(userInput);
-                                        System.out.print(from_server.readLine() + EXIT_WARNING);
-                                        quit = true;
-
-                                    } else {
-                                        to_server.println(userInput); // send input to server
-                                        serverOutput = from_server.readLine(); // get server response
-                                        
-                                        if (serverOutput.equalsIgnoreCase("processed")) {
-                                            // notification sent successfully, read new server line
-                                            System.out.print(SENT_NOTIFICATION + SERVER_RESPONSE + from_server.readLine() + CLIENT_MESSAGE);
-                                        } else {
-                                            // print server response
-                                            System.out.print(SERVER_RESPONSE + serverOutput + CLIENT_MESSAGE);
-                                        }
-                                    }
-
-                                } /** notifications to server cicle */
-
+                            if (userInput.equals("%quit")) {
+                                to_server.println(userInput);
+                                System.out.println(EXIT_WARNING);
+                                quit = true;
                             } else {
-                                // print server response
-                                System.out.print(SERVER_RESPONSE + serverOutput + CLIENT_MESSAGE);
-                            }
-                        }
+                                to_server.println(userInput); // send input to server
+                                serverOutput = from_server.readLine(); // get server response
 
-                    } /** location login cicle */
+                                if (serverOutput.equalsIgnoreCase("logged-in")) {
+                                    /** Client Logged In */
+                                    System.out.println(SERVER_RESPONSE + from_server.readLine());
+                                    
+                                    // Open thread for processing occurrence warnings
+                                    serverOutput = from_server.readLine(); // get extra information from server
+                                    separator = serverOutput.indexOf("/");
+                                    multicastIP = serverOutput.substring(0, separator);
+                                    multicastPort = Integer.parseInt(serverOutput.substring(separator + 1));
+                                    notificationThread = new ReceiveNotificationThread(multicastIP, multicastPort);
+                                    notificationThread.start();
+
+                                    // Continue communication with the server. Send notifications.
+                                    System.out.print(LOGOUT_INFO + SERVER_RESPONSE + from_server.readLine() + CLIENT_MESSAGE);
+                                    while (!quit && (userInput = stdIn.readLine()) != null) {
+                                        /** Client - Middle_Client. Start receiving event notifications */
+
+                                        if (userInput.equals("%logout")) {
+                                            to_server.println(userInput);
+                                            System.out.print(from_server.readLine() + EXIT_WARNING);
+                                            quit = true;
+
+                                        } else {
+                                            to_server.println(userInput); // send input to server
+                                            serverOutput = from_server.readLine(); // get server response
+                                            
+                                            if (serverOutput.equalsIgnoreCase("processed")) {
+                                                // notification sent successfully, read new server line
+                                                System.out.print(SENT_NOTIFICATION + SERVER_RESPONSE + from_server.readLine() + CLIENT_MESSAGE);
+                                            } else {
+                                                // print server response
+                                                System.out.print(SERVER_RESPONSE + serverOutput + CLIENT_MESSAGE);
+                                            }
+                                        }
+
+                                    } /** notifications to server cicle */
+
+                                } else {
+                                    // print server response
+                                    System.out.print(SERVER_RESPONSE + serverOutput + CLIENT_MESSAGE);
+                                }
+                            }
+
+                        } /** location login cicle */
+                    }
 
                 } catch (UnknownHostException e) {
-                    System.err.println("Don't know about host: " + serverIP);
+                    System.err.println(SEP + "Don't know about host: " + serverIP);
                 } catch (IOException e) {
-                    System.err.println("Couldn't get I/O for the connection.");
+                    System.err.println(SEP + "Couldn't get I/O for the connection.");
                 } finally {
                     if (notificationThread != null) notificationThread.interrupt();
                 }
 
             } catch (IOException e) {
-                System.err.println("Error reading from System.in!");
+                System.err.println(SEP + "Error reading from System.in!");
                 exit = true;
             } catch (NumberFormatException e) {
-                System.err.println("Server Port must be a valid Integer!");
+                System.err.println(SEP + "Server Port must be a valid Integer!");
             }
 
         } /** change location cicle */ 

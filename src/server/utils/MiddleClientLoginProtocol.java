@@ -58,6 +58,9 @@ public class MiddleClientLoginProtocol {
                 } else if (userTracking.checkUserClear(theInput)) {
                     theOutput = "Location is not registered, want to register? Type %register, or enter a new name.";
 
+                } else if (userTracking.isMiddleClientLogged(theInput)) {
+                    theOutput = "Location is already Logged In! Enter a Location name. (To register a new Location type %register!)";
+                    
                 } else {
                     // User exists
                     locationName = theInput;
@@ -94,8 +97,11 @@ public class MiddleClientLoginProtocol {
 
             if (sec_state == SecStates.GET_NAME) {
 
-                if (theInput.length() < 3 || theInput.length() > 30) {
-                    theOutput = "Location name must be within 3 and 30 characters. Enter a new name.";
+                if (!theInput.matches("[A-Z][a-z]+([ -][A-Z][a-z]+)*")) {
+                    theOutput = "Invalid location name, please try again. (Only first letter capital, words separated by ' ' or '-')";
+
+                } else if (theInput.length() < 3 || theInput.length() > 50) {
+                    theOutput = "Location name must be within 3 and 50 characters. Enter a new name.";
 
                 } else if (userTracking.isMiddleClientRegistered(theInput)) {
                     theOutput = "Location already exists. Write a new name or %cancel to go back to Login!";
@@ -200,6 +206,12 @@ public class MiddleClientLoginProtocol {
         return false;
     }
 
+    /**
+     * Read a JSON file if JsonElement equals a JsonArray
+     * 
+     * @param file_path file path
+     * @return JsonElement instance representing the file
+     */
     private JsonElement loadFromJSONFile(String file_path) {
         JsonElement json; // JsonElement correspondente ao ficheiro
         try

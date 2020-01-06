@@ -4,11 +4,11 @@ import java.sql.Timestamp;
 
 public class EventModel {
 
-    private String eventName, id, locationName, description;
+    private String eventName, id, description;
     private int severity, notifiedcount;
     private long initime;
 
-    public EventModel(String locationName, int severity, String description) {
+    public EventModel(int severity, String description) {
         switch (severity) {
             case 1:
                 this.eventName = "ForestFire";
@@ -19,7 +19,6 @@ public class EventModel {
             default:
                 this.eventName = "NuclearAccident";
         }
-        this.locationName = locationName;
         this.severity = severity;
         this.description = description;
         this.notifiedcount = 0;
@@ -51,10 +50,6 @@ public class EventModel {
 
     public String getEventName() {
         return eventName;
-    }
-
-    public String getLocationName() {
-        return locationName;
     }
 
     public String getDescription() {

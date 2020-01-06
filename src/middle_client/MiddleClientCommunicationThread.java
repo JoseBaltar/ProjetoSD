@@ -21,6 +21,7 @@ public class MiddleClientCommunicationThread extends Thread {
     private static final String REGISTER = "Client Registered!";
     private static final String PROCESSING = "Processing and Redirecting End-Client event notifications ...";
     private static final String LOGOUT = "Successfully Logged Out. Terminating connection ...";
+    private static final String INVALID_USER = "User is invalid! Only End-Client (Citizen) users allowed!";
 
     private Socket clientConnection;
     private PrintWriter outMainServer;
@@ -63,6 +64,12 @@ public class MiddleClientCommunicationThread extends Thread {
         // Output to Client
         PrintWriter out_cli = new PrintWriter(clientConnection.getOutputStream(), true);
         ) {
+            if (!in_cli.readLine().equals("!asdasdasdqweqweqwe654123?")) {
+                out_cli.println(INVALID_USER);
+                clientConnection.close();
+                return;
+            }
+            
             boolean quit = false;
             String clientInp, processed; // store input from user and output from protocol, respectively
 

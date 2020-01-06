@@ -3,10 +3,23 @@ package client;
 import java.io.*;
 import java.net.*;
 
+import javax.swing.JFrame;
+import javax.swing.JPanel;
+import javax.swing.JLabel;
+import javax.swing.JScrollPane;
+import javax.swing.JTextField;
+import javax.swing.JTextArea;
+
 /**
- * 
+ * Opens a {@link java.net.MulticastSocket} to wait for Event Notifications
+ * and print them in a JAVA SWING window
  */
 public class ReceiveNotificationThread extends Thread {
+
+    private JFrame guiFrame;
+    private JTextArea displayIncoming;
+    private JTextArea displayLast;
+    private JTextArea displayList; 
 
     protected String multicastSocketIP;
     protected int port;
@@ -38,18 +51,28 @@ public class ReceiveNotificationThread extends Thread {
                 socket.receive(packet); // wait for packet from server
 
                 String received = new String(packet.getData(), 0, packet.getLength());
-                // String[] params = eventDetails.split(","); 
-                // String description = params[1];
-                // int eventSeverity = Integer.parseInt(params[0]);
-                // String eventName = received.substring(0, received.indexOf(","));
-                // int eventSeverity = Integer.parseInt(received.substring(received.indexOf(",")));
-                System.out.println("Notification: " + received); // TODO Output notification (fazer uma janela no swing)
+                String[] params = received.split(","); 
+                String description = params[0], name = params[1], location = params[2];
+                showIncomingEvent(location, name, description);
             }
 
             socket.leaveGroup(address);
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    private void showIncomingEvent(String location, String eventName, String description) {
+
+    }
+
+    /**
+     * TODO
+     * @param event
+     */
+    private void createEventNotificationWindow() {
+        // create the window to display incoming notifications
+        guiFrame = new JFrame();
     }
 
 }

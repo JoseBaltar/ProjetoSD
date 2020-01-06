@@ -5,7 +5,10 @@ import middle_client.utils.EventModel;
 import java.io.IOException;
 import java.net.*;
 
+import javax.swing.JFrame;
+
 import middle_client.utils.EventTracking;
+import middle_client.utils.UserTracking;
 
 /**
  * Thread que espera por sinalizações de ocorrencias, por parte do servidor.
@@ -14,25 +17,31 @@ import middle_client.utils.EventTracking;
  */
 public class WaitOccurrenceThread extends Thread {
 
+    private JFrame guiFrame; 
+
     private DatagramSocket listeningSocket = null;
     private DatagramSocket broadcastSocket = null;
     private EventTracking eventTracking;
+    private UserTracking userTracking;
+    private EventModel notifiedEvent;
 
     private String multicastIPAddress;
     private int multicastPort;
 
-    WaitOccurrenceThread(EventTracking eventTracking) throws SocketException {
+    WaitOccurrenceThread(EventTracking eventTracking, UserTracking userTracking) throws SocketException {
         super();
         this.eventTracking = eventTracking;
+        this.userTracking = userTracking;
         this.listeningSocket = new DatagramSocket(); // socket for listening to server notifications
         this.broadcastSocket = new DatagramSocket(); // this socket port is obsolete since nothing is getting sent to it
     }
 
-    WaitOccurrenceThread(String multicastIPAddress, int multicastPort, EventTracking eventTracking) throws SocketException {
+    WaitOccurrenceThread(String multicastIPAddress, int multicastPort, EventTracking eventTracking, UserTracking userTracking) throws SocketException {
         super();
         this.multicastIPAddress = multicastIPAddress;
         this.multicastPort = multicastPort;
         this.eventTracking = eventTracking;
+        this.userTracking = userTracking;
         this.listeningSocket = new DatagramSocket(); // socket for listening to server notifications
         this.broadcastSocket = new DatagramSocket(); // this socket port is obsolete since nothing is getting sent to it
     }
@@ -61,19 +70,20 @@ public class WaitOccurrenceThread extends Thread {
                 packet = new DatagramPacket(buf, buf.length, address, port);
                 listeningSocket.send(packet);
 
-                // broadcast the ocurrence to all clients
-                this.broadcastEventToClients(eventDetails, multicastIPAddress, multicastPort);
                 // instanciate the event model
                 String[] params = eventDetails.split(","); 
                 String description = params[1];
                 int eventSeverity = Integer.parseInt(params[0]);
-                EventModel eventModel = new EventModel(MiddleClient.getThisLocationName(), eventSeverity, description);
+                notifiedEvent = new EventModel(eventSeverity, description);
+                // broadcast the ocurrence to all clients
+                this.broadcastEventToClients(notifiedEvent.getDescription(), notifiedEvent.getEventName(), 
+                                MiddleClient.getThisLocationName(), multicastIPAddress, multicastPort);
                 // start sending reports to the server
-                Thread event = new SendReportsThread(address, serverListeningPort, eventModel);
+                Thread event = new SendReportsThread(address, serverListeningPort, notifiedEvent);
                 event.start();
 
                 // add event to shared object
-                eventTracking.addActiveEvent(eventModel);
+                eventTracking.addActiveEvent(notifiedEvent);
                 this.createEventFinishWindow(event);
 
             } catch (IOException e) {
@@ -92,25 +102,32 @@ public class WaitOccurrenceThread extends Thread {
      */
     private void createEventFinishWindow(Thread event) {
         // interrupt thread and remove event from shared object
+        guiFrame = new JFrame();
     }
 
     /**
-     * TODO
-     * @param eventDetails
-     * @param multicastIP
-     * @param multicastPort
+     * Broadcast the Occurring Event Details to all Clients linstening at the
+     * multicast IP and PORT
+     * 
+     * @param description event description
+     * @param name event name
+     * @param location event location
+     * @param multicastIP multicast address group to send the notification
+     * @param multicastPort listening port for the sockets
      */
-    public void broadcastEventToClients(String eventDetails, String multicastIP, int multicastPort) {
+    public void broadcastEventToClients(String description, String name, String location, 
+                            String multicastIP, int multicastPort) {
         try {
-            byte[] buf = new byte[256];
-
             // construct packet
-            buf = eventDetails.getBytes();// = "VAO TODOS MORRER".getBytes();
+            byte[] buf = (name + "," + description + "," + location).getBytes(); // = "VAO TODOS MORRER".getBytes();
 
             // send it
             InetAddress group = InetAddress.getByName(multicastIP);
             DatagramPacket packet = new DatagramPacket(buf, buf.length, group, multicastPort);
             broadcastSocket.send(packet);
+            
+            // all logged in clients should be notified ... 
+            notifiedEvent.addNotifiedCount(userTracking.getNumberLoggedUsers());
 
         } catch (IOException e) {
             e.printStackTrace();

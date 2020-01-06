@@ -57,6 +57,9 @@ public class ClientLoginProtocol {
                 } else if (userTracking.checkUserClear(theInput)) {
                     theOutput = "Client is not registered, want to register? Type %register, or enter a new username.";
                 
+                } else if (userTracking.isClientLogged(theInput)) {
+                    theOutput = "Client is already Logged In! Type %register, or enter a new username.";
+                    
                 } else {
                     // User exists
                     username = theInput;
@@ -148,10 +151,11 @@ public class ClientLoginProtocol {
     }
 
     /**
-     * @return False if it fails writing to the file, true if succeeds
-     *
      * This method rewrites the json file by adding a new entry to it
-     * It creats a JSON Object with several Properties associated, to which it will add to a JSON array with the old entries, which will then be written
+     * It creats a JSON Object with several Properties associated, 
+     * to which it will add to a JSON array with the old entries, which will then be written
+     * 
+     * @return False if it fails writing to the file, true if succeeds
      */
     public synchronized boolean registerUserJson() {
 
@@ -184,9 +188,10 @@ public class ClientLoginProtocol {
     }
 
     /**
-     * @return a JsonElement if it can read, null if can not read
-     *
-     * It creates a JsonElement to be parsed into a JsonArray in order to be accessible for further use
+     * Read a JSON file if JsonElement equals a JsonArray
+     * 
+     * @param file_path file path
+     * @return JsonElement instance representing the file
      */
     public synchronized JsonElement loadFromJSONFile(String file_path) {
         JsonElement json; // JsonElement correspondente ao ficheiro

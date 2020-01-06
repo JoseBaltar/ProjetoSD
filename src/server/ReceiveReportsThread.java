@@ -16,6 +16,7 @@ import java.util.logging.SimpleFormatter;
 public class ReceiveReportsThread extends Thread {
 
     private DatagramSocket socket;
+    private int TIMEOUT = 60 * 60 * 24; // 1 day
 
     ReceiveReportsThread() throws SocketException {
         this.socket = new DatagramSocket();
@@ -38,6 +39,7 @@ public class ReceiveReportsThread extends Thread {
             try {
                 byte[] buf = new byte[512];
                 DatagramPacket packet = new DatagramPacket(buf, buf.length);
+                socket.setSoTimeout(TIMEOUT);
                 socket.receive(packet);
 
                 String reportinfo = new String(buf, 0, packet.getLength());

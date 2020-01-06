@@ -21,7 +21,7 @@ Sistema Distribuido à base de sockets em Java para Aviso de Catástrofes
 
     > javac -d ../bin -cp ../resources/gson-2.8.5.jar middle_client/*.java middle_client/utils/*.java
 
-    > java -cp ../resources/gson-2.8.5.jar;../bin; middle_client.MiddleClient <\main_server_ip> <\main_server_port>
+    > java -cp ../resources/gson-2.8.5.jar;../bin; middle_client.MiddleClient
 
     *End-Client*
 
