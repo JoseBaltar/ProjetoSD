@@ -3,6 +3,8 @@ package middle_client.utils;
 import java.util.ArrayList;
 import java.util.Iterator;
 
+import middle_client.models.EventModel;
+
 public class EventTracking {
 
     private ArrayList<EventModel> currentEvents;

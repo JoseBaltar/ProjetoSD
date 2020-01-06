@@ -3,6 +3,8 @@ package server.utils;
 import java.util.ArrayList;
 import java.util.Iterator;
 
+import server.models.EventModel;
+
 public class EventTracking {
 
     private ArrayList<EventModel> currentEvents;

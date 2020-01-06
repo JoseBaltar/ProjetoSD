@@ -3,9 +3,9 @@ package middle_client;
 import java.io.*;
 import java.net.*;
 
-import middle_client.utils.ClientLoginProtocol;
-import middle_client.utils.NotificationProtocol;
 import middle_client.utils.UserTracking;
+import middle_client.protocols.ClientLoginProtocol;
+import middle_client.protocols.NotificationProtocol;
 import middle_client.utils.EventTracking;
 
 /**

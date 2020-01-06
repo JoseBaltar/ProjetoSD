@@ -1,7 +1,7 @@
 package middle_client.utils;
 
 import com.google.gson.*;
-import middle_client.utils.RegisterClientModel;
+import middle_client.models.RegisterClientModel;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -67,15 +67,13 @@ public class UserTracking {
         }
         return false;
     }
-
-    //Esta aqui deve ser usada para adicionar um novo user enquanto o programa corre, sem haver necessidade de reler o ficheiro (no método do protocolo registerUserJson)
+    
     public synchronized boolean addRegisteredUser(RegisterClientModel client){
         if (isClientRegistered(client.getUsername()))
             return false;
         return registeredUsers.add(client);
     }
-
-    //Esta aqui deverá ser chamada no ínicio de cada "sessão" para carregar os que existem no ficheiro, carregando os utilizadores existentes na sua localização apenas
+    
     public void setRegisteredUsers(JsonElement file){
         JsonArray utilizadores
                 = (file != null && file.isJsonArray()

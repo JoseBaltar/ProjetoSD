@@ -1,9 +1,9 @@
 package middle_client;
 
-import middle_client.utils.EventModel;
-
 import java.io.IOException;
 import java.net.*;
+
+import middle_client.models.EventModel;
 
 /**
  * Thread que representa o decorrer de um evento. São enviadas por aqui

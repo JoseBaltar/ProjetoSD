@@ -1,4 +1,4 @@
-package server.utils;
+package server.models;
 
 import java.util.ArrayList;
 import java.util.Iterator;

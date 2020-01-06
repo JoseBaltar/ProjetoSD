@@ -1,4 +1,4 @@
-package server.utils;
+package server.models;
 
 public class EventModel {
 

@@ -1,12 +1,11 @@
 package middle_client;
 
-import middle_client.utils.EventModel;
-
 import java.io.IOException;
 import java.net.*;
 
 import javax.swing.JFrame;
 
+import middle_client.models.EventModel;
 import middle_client.utils.EventTracking;
 import middle_client.utils.UserTracking;
 

@@ -2,9 +2,6 @@ package server;
 
 import com.google.gson.*;
 
-import server.utils.RegisterClientModel;
-import server.utils.EventModel;
-
 import java.io.*;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
@@ -12,11 +9,10 @@ import java.net.InetAddress;
 import java.net.Socket;
 import java.util.Iterator;
 
-import server.utils.ConnectionsTracking;
-import server.utils.EventTracking;
-import server.utils.MiddleClientLoginProtocol;
-import server.utils.MiddleClientModel;
-import server.utils.UserTracking;
+import server.models.EventModel;
+import server.models.MiddleClientModel;
+import server.protocols.MiddleClientLoginProtocol;
+import server.utils.*;
 
 /**
  * Disponibiliza um meio de comunicação com o Cliente Intermédio através de um Protocolo.

@@ -1,4 +1,4 @@
-package middle_client.utils;
+package middle_client.protocols;
 
 import java.util.ArrayList;
 import java.util.Iterator;

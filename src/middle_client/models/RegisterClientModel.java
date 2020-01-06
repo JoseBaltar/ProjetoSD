@@ -1,4 +1,4 @@
-package middle_client.utils;
+package middle_client.models;
 
 public class RegisterClientModel {
     private String username;

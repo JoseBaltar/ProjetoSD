@@ -2,6 +2,9 @@ package server.utils;
 
 import com.google.gson.*;
 
+import server.models.MiddleClientModel;
+import server.models.RegisterClientModel;
+
 import java.util.ArrayList;
 import java.util.Iterator;
 
