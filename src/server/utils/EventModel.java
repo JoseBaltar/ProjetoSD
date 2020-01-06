@@ -12,6 +12,7 @@ public class EventModel {
                 break;
             case 2: 
                 this.eventName = "Earthquake";
+                break;
             default:
                 this.eventName = "NuclearAccident";
         }

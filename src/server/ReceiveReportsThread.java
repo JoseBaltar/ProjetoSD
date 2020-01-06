@@ -36,7 +36,7 @@ public class ReceiveReportsThread extends Thread {
 
         while (!Thread.interrupted()) {
             try {
-                byte[] buf = new byte[2048];
+                byte[] buf = new byte[512];
                 DatagramPacket packet = new DatagramPacket(buf, buf.length);
                 socket.receive(packet);
 

@@ -45,7 +45,7 @@ public class MiddleClientCommunicationThread extends Thread {
         super();
         this.clientConnection = clientConnection;
         this.outMainServer = outMainServer;
-        this.DISPLAY = "\nMiddle-Client | Client:" + clientConnection.getInetAddress() + ":" + clientConnection.getPort() + ": ";
+        this.DISPLAY = "\nMiddle-Client | Client:" + clientConnection.getInetAddress() + ":" + clientConnection.getLocalPort() + ": ";
 
         this.multicastIPAddress = multicastIPAddress;
         this.multicastPort = multicastPort;
@@ -53,7 +53,7 @@ public class MiddleClientCommunicationThread extends Thread {
         // this.eventTracking = eventTracking;
 
         this.login_protocol = new ClientLoginProtocol(locationName, userTracking, path);
-        this.notification_protocol = new NotificationProtocol(userTracking, eventTracking);
+        this.notification_protocol = new NotificationProtocol();
     }
 
     public void run() {
@@ -109,7 +109,7 @@ public class MiddleClientCommunicationThread extends Thread {
                                 quit = true;
 
                             } else {
-                                processed = notification_protocol.processInput("");
+                                processed = notification_protocol.processInput(clientInp);
                                 
                                 if (processed.equalsIgnoreCase("processed")) {
                                     // redirect event notification into main server

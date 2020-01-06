@@ -64,8 +64,8 @@ public class ServerCommunicationThread extends Thread {
 
             boolean quit = false; // quit communication (client input)
             String clientInp, processed; // store input from user and output from protocol, respectively
-            String[] locations; // store locations for sending warnings (format: "%s,%s", ip, port)
-            String clientUsername, locationName; // store client usernames from login and logout notifications
+            String[] locations, params; // store locations for sending warnings (format: "%s,%s", ip, port) and notification params
+            String clientUsername, locationName, multicastAddress; // store client usernames from login and logout notifications
             String event, ip; int port; // store details about event notification received
 
             out.println(login_protocol.processInput(""));
@@ -83,11 +83,11 @@ public class ServerCommunicationThread extends Thread {
                     if (processed.equalsIgnoreCase("logged-in")) {
                         /** Middle-Client Logged-In */
                         out.println(processed);
+                        // get extra information from middle-client to enable sending occurence notifications
+                        multicastAddress = login_protocol.processInput(in.readLine());
                         // send locationName, multicast IP and Port to middle-client
                         locationName = login_protocol.getLocationName();
-                        out.println(locationName + ":" + login_protocol.getMulticastAddress());
-                        // get extra information from middle-client to enable sending occurence notifications
-                        login_protocol.processInput(in.readLine()); // GET_CLIENT_LISTENING_PORT main_state no protocolo
+                        out.println(locationName + ":" + multicastAddress);
 
                         System.out.println(DISPLAY + PROCESSING);
                         while ((clientInp = in.readLine()) != null) {
@@ -124,13 +124,14 @@ public class ServerCommunicationThread extends Thread {
                             } else {
                                 /** Process notification sent by client: location:location;danger-degree;description */
                                 processed = processEvent(clientInp);
-                                System.out.println("\n\nTEST: receive event notification from Middle-Client, check. Notification: " + clientInp);
+                                System.out.println("\n\nTEST: receive event notification from Middle-Client, check. Notification: " + processed);
 
                                 if (processed.startsWith("create-event")) {
                                     /** Execute server actions on a new event */
-                                    // notify every location specified - open a ReceiveReportsThread for every one of them
-                                    event = processed.substring(processed.indexOf("?") + 1, processed.indexOf(";")); // get event details
-                                    locations = processed.substring(processed.indexOf(";") + 1).split(":"); // get locations
+                                    // notify every location specified - open a ReceiveReportsThread for every one of them~
+                                    params = processed.substring(processed.indexOf("?") + 1).split(";");
+                                    event = params[0]; // get event details
+                                    locations = params[1].split(":"); // get locations
                                     if (!event.equals("3")) {
                                         System.out.println("\n==========\nSending Event Notification to all mentioned Locations ...");
                                     } else {
@@ -179,12 +180,12 @@ public class ServerCommunicationThread extends Thread {
      * separated from the rest of the string by "?".
      */
     private String processEvent(String eventNotification) {
-        int sep = eventNotification.indexOf(";"), sep2 = eventNotification.indexOf(";", sep),
-            degree = Integer.parseInt(eventNotification.substring(sep + 1, sep2));
-        String[] locationNames = eventNotification.substring(0, sep).split(":");
-        String description = eventNotification.substring(sep2 + 1);
+        System.out.println("\n\n\nEVENT NOTIFICATION: " + eventNotification);
+        String[] params = eventNotification.split(";"), locationNames = params[0].split(":");
+        int degree = Integer.parseInt(params[1]);
+        String description = params[2];
 
-        String prefix = "create-event", eventDetails = degree + "," + description, locations = "";
+        String prefix = "create-event", eventDetails = "" + degree + "," + description, locations = "";
         
         for (String location : locationNames) {
             if (userTracking.isMiddleClientLogged(location)) {
@@ -203,7 +204,7 @@ public class ServerCommunicationThread extends Thread {
 
         if (locations.isEmpty())
             prefix = "in-progress";
-        return prefix + eventDetails + locations;
+        return prefix + "?" + eventDetails + ";" + locations;
     }
 
     /**

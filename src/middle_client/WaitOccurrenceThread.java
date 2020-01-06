@@ -54,7 +54,7 @@ public class WaitOccurrenceThread extends Thread {
                     eventDetails = response.substring(0, response.indexOf(":"));
                 InetAddress address = packet.getAddress();
                 int port = packet.getPort(), 
-                    serverListeningPort = Integer.parseInt(response.substring(response.indexOf(":")));
+                    serverListeningPort = Integer.parseInt(response.substring(response.indexOf(":") + 1));
 
                 // send ok message to server
                 buf = "OK".getBytes();
@@ -64,9 +64,9 @@ public class WaitOccurrenceThread extends Thread {
                 // broadcast the ocurrence to all clients
                 this.broadcastEventToClients(eventDetails, multicastIPAddress, multicastPort);
                 // instanciate the event model
-                int sep = eventDetails.indexOf(","); 
-                String description = eventDetails.substring(sep + 1);
-                int eventSeverity = Integer.parseInt(eventDetails.substring(0, sep));
+                String[] params = eventDetails.split(","); 
+                String description = params[1];
+                int eventSeverity = Integer.parseInt(params[0]);
                 EventModel eventModel = new EventModel(MiddleClient.getThisLocationName(), eventSeverity, description);
                 // start sending reports to the server
                 Thread event = new SendReportsThread(address, serverListeningPort, eventModel);
@@ -116,6 +116,14 @@ public class WaitOccurrenceThread extends Thread {
             e.printStackTrace();
             this.interrupt();
         }
+    }
+
+    public void setMulticastIP(String address) {
+        this.multicastIPAddress = address;
+    }
+
+    public void setMulticastPort(int port) {
+        this.multicastPort = port;
     }
 
     /**

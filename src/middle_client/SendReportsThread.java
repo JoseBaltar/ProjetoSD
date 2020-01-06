@@ -59,10 +59,10 @@ public class SendReportsThread extends Thread {
     }
 
     private String logInformation(){
-        float currentelapsedtime = System.nanoTime() - eventModel.getInitime();
+        float currentelapsedtime = (System.currentTimeMillis() - eventModel.getInitime()) / 100;
         return "Location: " + eventModel.getLocationName() + "EventName: " + eventModel.getEventName() 
                         + ", ID:" + eventModel.getId() + ", Description: " + eventModel.getDescription()
-                        + ", NumberOfIdentifiedPersonel: " + eventModel.getNotifiedCount() + " CurrentTime: " + currentelapsedtime;
+                        + ", NumberOfIdentifiedPersonel: " + eventModel.getNotifiedCount() + " CurrentTimeSeconds: " + currentelapsedtime;
     }
   
     private String finalLogInfo(){

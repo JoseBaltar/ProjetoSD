@@ -72,17 +72,17 @@ public class MiddleClientLoginProtocol {
 
                 } else {
                     /** Logged In, save multicastAddress and wait for client response */
-                    this.multicastAddress = userTracking.getLoggedMiddleClient(locationName).getMulticastAddress();
                     theOutput = "logged-in"; // key-word for sinalizing login in communication thread
                     sec_state = SecStates.GET_CLIENT_DATA;
                 }
 
             } else if (sec_state == SecStates.GET_CLIENT_DATA) {
 
-                userTracking.getLoggedMiddleClient(locationName).locationAddress = theInput;
-                if (userTracking.loginMiddleClient(locationName))
+                if (userTracking.loginMiddleClient(locationName)) {
+                    userTracking.getLoggedMiddleClient(locationName).locationAddress = theInput;
+                    this.multicastAddress = theOutput = userTracking.getLoggedMiddleClient(locationName).getMulticastAddress();
                     main_state = MainStates.LOGGED;
-                else
+                } else
                     theOutput = "ERROR while logging in! Enter a Location name. (To register a new Location type %register!)";
 
             } else {

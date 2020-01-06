@@ -15,6 +15,7 @@ public class EventModel {
                 break;
             case 2: 
                 this.eventName = "Earthquake";
+                break;
             default:
                 this.eventName = "NuclearAccident";
         }
@@ -37,7 +38,7 @@ public class EventModel {
     }
 
     private void setInitime() {
-        initime = System.nanoTime();
+        initime = System.currentTimeMillis();
     }
 
     public long getInitime() {

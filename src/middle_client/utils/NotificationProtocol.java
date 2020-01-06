@@ -1,110 +1,126 @@
 package middle_client.utils;
 
-import jdk.jfr.Event;
+import java.util.ArrayList;
+import java.util.Iterator;
 
-/**
- * TODO
- */
 public class NotificationProtocol {
-    public NotificationProtocol(UserTracking userTracking, EventTracking eventTracking) {
-        this.userTracking = userTracking;
-        this.eventTracking = eventTracking;
-    }
 
     private static enum MainStates {
-        DUMMY, LOGOUT, SENDEVENT, NOTIFICATION_SENT
+        CREATE_NOTIFICATION, SEND_NOTIFICATION
     };
 
     private static enum SecStates {
-        NOT_DEFINED, GET_LOCATION,
-        GET_SEVERITY, GET_DESCRIPTION
+        NOT_DEFINED, GET_LOCATIONS, GET_SEVERITY, GET_DESCRIPTION
     };
 
-    private MainStates main_state = MainStates.SENDEVENT;
+    private MainStates main_state = MainStates.CREATE_NOTIFICATION;
     private SecStates sec_state = SecStates.NOT_DEFINED;
 
-    private boolean dummy = false;
-    private UserTracking userTracking;
-    private EventTracking eventTracking;
-    private String name, description;
+    private ArrayList<String> locations;
+    private String description;
     private int severity;
+
+    public NotificationProtocol() {
+        locations = new ArrayList<>();
+    }
 
     public String processInput(String theInput) {
         String theOutput = null;
 
-
-
         // Check special inputs
-        if (theInput.equals("%logout")) {
-            //main_state = MainStates.LOGOUT;
-            //  sec_state = SecStates.NOT_DEFINED;
-        } else if (theInput.equals("%notify")){
-            main_state = MainStates.SENDEVENT;
-            sec_state = SecStates.GET_LOCATION;
+        if (theInput.equals("%done")) {
+            sec_state = SecStates.GET_DESCRIPTION;
+        } else if (theInput.equals("%restart")) {
+            main_state = MainStates.CREATE_NOTIFICATION;
+            sec_state = SecStates.NOT_DEFINED;
         }
 
-        if (main_state == MainStates.SENDEVENT) {
-            //sec_state = SecStates.GET_LOCATION;
-            if (sec_state == SecStates.GET_LOCATION) {
-                if (theInput.isEmpty()) {
-                    theOutput = "Invalid location! Enter the location.";
+        if (main_state == MainStates.CREATE_NOTIFICATION) {
+            
+            if (sec_state == SecStates.GET_SEVERITY) {
 
-                } else if (!theInput.matches("[a-zA-Z]+")) {
-                    theOutput = "Invalid location name, please try again.";
+                if (theInput.isEmpty()) {
+                    theOutput = "Invalid Event type! Please repeat.";
+
+                } else if (theInput.equalsIgnoreCase("ForestFire") || theInput.equalsIgnoreCase("Earthquake") || theInput.equalsIgnoreCase("NuclearAccident")) {
+                    switch (theInput) {
+                        case "ForestFire":
+                            severity = 1;
+                            break;
+                        case "Earthquake": 
+                            severity = 2;
+                            break;
+                        default:
+                            severity = 3;
+                    }
+
+                    if (severity == 3) {
+                        sec_state = SecStates.GET_DESCRIPTION;
+                        theOutput = "Event type added! The Event is going to be broadcasted at National level! Enter the Event description.";
+                    } else {
+                        sec_state = SecStates.GET_LOCATIONS;
+                        theOutput = "Event type added! In which locations is the Event happening? Input location names.";
+                    }
 
                 } else {
-                    name = theInput;
-                    theOutput = "Enter the event description.";
+                    theOutput = "Invalid severity! Please enter one of the following - ForestFire, Earthquake or NuclearAccident.";
+                }
+
+            } else if(sec_state == SecStates.GET_LOCATIONS) {
+
+                if (theInput.isEmpty()) {
+                    theOutput = "Invalid location! Enter a new location.";
+
+                } else if (!theInput.matches("[A-Z][a-z]+([ -][A-Z][a-z]+)*")) {
+                    theOutput = "Invalid location name, please try again. (Only first letter capital, words separated by ' ' or '-')";
+
+                } else {
+                    locations.add(theInput);
+                    theOutput = "Location added successfuly! Enter another or type %done to go to next input.";
                     sec_state = SecStates.GET_DESCRIPTION;
                 }
-            }
-            if(sec_state == SecStates.GET_SEVERITY) {
-                if (theInput.isEmpty()) {
-                    theOutput="Invalid Description! Please fill the description";
-                }else{
+
+            } else if (sec_state == SecStates.GET_DESCRIPTION){
+
+                if (theInput.equalsIgnoreCase("%done")) {
+                    theOutput = "Enter the Event description (max 300 digits).";
+
+                } else if (theInput.isEmpty()) {
+                    theOutput = "Invalid Description! Enter new Description or %restart to start over.";
+
+                } else if (theInput.length() > 300) {
+                    theOutput = "Description can only have at max 300 digits! Enter new Description or %restart to start over.";
+
+                } else {
                     description = theInput;
-                    theOutput = "Enter the event severity from 1 to 3.";
-                    sec_state = SecStates.GET_SEVERITY;
-                }
-            }
-
-            if(sec_state == SecStates.GET_SEVERITY){
-                try {
-                    if (theInput.isEmpty()) {
-                        theOutput = "Invalid severity! Please enter a number between 1 and 3";
-                    } else if ((Integer.parseInt(theInput)) > 3 || (Integer.parseInt(theInput)) < 1) {
-                        theOutput = "Invalid severity! Please enter a number between 1 and 3";
-                    } else {
-                        severity = Integer.parseInt(theInput);
-                        //eventTracking.addActiveEvent(setEventModel());
-                        main_state = MainStates.NOTIFICATION_SENT;
-                        theOutput = "processed";
-                    }
-                }catch(NumberFormatException ex){
-                    theOutput = "Invalid severity! Please enter a number between 1 and 3";
-                }
-            }
-
-        } else if (main_state == MainStates.LOGOUT) {
-            if (sec_state == SecStates.NOT_DEFINED) {
-                if (theInput.isEmpty()) {
-                    theOutput = "Invalid username! Please try again";
-                } else if (!userTracking.logoutUser(theInput)){
-                    theOutput = "Invalid username! Please try again";
-                } else{
-                    theOutput = "Goodbye";
+                    theOutput = "processed";
+                    main_state = MainStates.SEND_NOTIFICATION;
                 }
 
+            } else {
+                theOutput = "Ready to start sending Notifications! You will be asked three different inputs: "
+                        + "Event Type, Locations, and a Description. Type %restart to restart inputs whenever you want!"
+                        + "Enter the Event type - one of the following: ForestFire, Earthquake or NuclearAccident";
+                sec_state = SecStates.GET_SEVERITY;
             }
-        } else {
+
+        } else if (main_state == MainStates.SEND_NOTIFICATION) {
+
+            theOutput = "";
+            Iterator<String> it = locations.iterator();
+            while (it.hasNext())
+                if (theOutput.isEmpty())
+                    theOutput = theOutput + it.next();
+                else
+                    theOutput = theOutput + ":" + it.next();
+            theOutput = theOutput + ";" + severity + ";" + description;
+            locations.clear();
+            main_state = MainStates.CREATE_NOTIFICATION;
+            sec_state = SecStates.NOT_DEFINED;
+
+        } else {    
             // more ...
         }
         return theOutput;
     }
-
-   /* public EventModel setEventModel(){
-        return new EventModel(name, severity);
-    } */
-
-
 }

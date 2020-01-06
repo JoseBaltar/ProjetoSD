@@ -1,0 +1,12 @@
+jan 05, 2020 11:27:47 PM server.ReceiveReportsThread LogReport
+INFO: Location: TestEventName: ForestFire, ID:ForestFire2020-01-05 23:27:17.546, Description: adsadasdasdas, NumberOfIdentifiedPersonel: 0 CurrentTime: 3.00103823E10
+jan 05, 2020 11:28:17 PM server.ReceiveReportsThread LogReport
+INFO: Location: TestEventName: ForestFire, ID:ForestFire2020-01-05 23:27:17.546, Description: adsadasdasdas, NumberOfIdentifiedPersonel: 0 CurrentTime: 6.0018242E10
+jan 05, 2020 11:28:47 PM server.ReceiveReportsThread LogReport
+INFO: Location: TestEventName: ForestFire, ID:ForestFire2020-01-05 23:27:17.546, Description: adsadasdasdas, NumberOfIdentifiedPersonel: 0 CurrentTime: 9.0019193E10
+jan 05, 2020 11:29:17 PM server.ReceiveReportsThread LogReport
+INFO: Location: Test EventName: ForestFire, ID:ForestFire2020-01-05 23:27:17.546, Description: adsadasdasdas, NumberOfIdentifiedPersonel: 0 CurrentTime: 1.20019796E11
+jan 05, 2020 11:29:47 PM server.ReceiveReportsThread LogReport
+INFO: Location: TestEventName: ForestFire, ID:ForestFire2020-01-05 23:27:17.546, Description: adsadasdasdas, NumberOfIdentifiedPersonel: 0 CurrentTime: 1.50032433E11
+jan 05, 2020 11:30:17 PM server.ReceiveReportsThread LogReport
+INFO: Location: TestEventName: ForestFire, ID:ForestFire2020-01-05 23:27:17.546, Description: adsadasdasdas, NumberOfIdentifiedPersonel: 0 CurrentTime: 1.80036813E11

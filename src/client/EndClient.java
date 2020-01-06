@@ -79,7 +79,7 @@ public class EndClient {
                                 notificationThread.start();
 
                                 // Continue communication with the server. Send notifications.
-                                System.out.print(LOGOUT_INFO + CLIENT_MESSAGE);
+                                System.out.print(LOGOUT_INFO + SERVER_RESPONSE + from_server.readLine() + CLIENT_MESSAGE);
                                 while (!quit && (userInput = stdIn.readLine()) != null) {
                                     /** Client - Middle_Client. Start receiving event notifications */
 

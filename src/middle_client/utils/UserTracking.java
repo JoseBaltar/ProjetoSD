@@ -19,6 +19,8 @@ public class UserTracking {
     public synchronized boolean loginUser(String username) {
         if (!isClientRegistered(username))
             return false;
+        if (isClientLogged(username))
+            logoutUser(username);
         return loggedUsers.add(username);
     }
 
@@ -82,7 +84,6 @@ public class UserTracking {
                 registeredUsers.add(rcm);
             }
         }
-        System.out.println("\n\nALREADY REGISTERED: " + registeredUsers.toString());
     }
 
     public Iterator<RegisterClientModel> getAllUsers(){

@@ -89,6 +89,16 @@ public class MiddleClient {
                         if (serverOutput.equalsIgnoreCase("logged-in")) {
                             /** Logged In, get server login data */
                             System.out.print(LOGIN);
+
+                            try {
+                                // create thread for listening to server notifications
+                                waitOccurrenceThread = new WaitOccurrenceThread(eventTracking);
+                            } catch (IOException e) {
+                                e.printStackTrace(); // socket error in thread
+                            }
+
+                            // send extra information to server, about the waitOccurrencePort, enabling the server to notify this Middle-Client
+                            to_server.println(mainServerConnection.getInetAddress().getHostAddress() + "/" + waitOccurrenceThread.getSocketPort());
                             
                             // get multicast IP and PORT and the Name of this location
                             serverOutput = from_server.readLine();
@@ -96,17 +106,11 @@ public class MiddleClient {
                             locationName = serverOutput.substring(0, sep1);
                             multicastIP = serverOutput.substring(sep1 + 1, sep2);
                             multicastPort = Integer.parseInt(serverOutput.substring(sep2 + 1));
-                            try {
-                                // create thread for listening to server notifications
-                                waitOccurrenceThread = new WaitOccurrenceThread(multicastIP, multicastPort, eventTracking);
-                                /** Start listening for Server Ocurrence notifications */
-                                waitOccurrenceThread.start();
-                            } catch (IOException e) {
-                                e.printStackTrace();
-                            }
 
-                            // send extra information to server, about the waitOccurrencePort, enabling the server to notify this Middle-Client
-                            to_server.println(mainServerConnection.getInetAddress().getHostAddress() + "/" + waitOccurrenceThread.getSocketPort());
+                            /** Start listening for Server Ocurrence notifications */
+                            waitOccurrenceThread.setMulticastIP(multicastIP);
+                            waitOccurrenceThread.setMulticastPort(multicastPort);
+                            waitOccurrenceThread.start();
 
                             /** Wait and Process client connections */
                             try (
