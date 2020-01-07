@@ -81,7 +81,7 @@ public class WaitOccurrenceThread extends Thread {
 
                 // add event to shared object
                 eventTracking.addActiveEvent(notifiedEvent);
-                CreateWindow.addEventFinishWindow(notifiedEvent, eventTracking);
+                CreateWindow.addEventFinishWindow(notifiedEvent, eventTracking, event);
 
             } catch (IOException e) {
                 e.printStackTrace();

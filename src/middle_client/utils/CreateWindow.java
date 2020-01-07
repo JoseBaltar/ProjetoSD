@@ -116,7 +116,7 @@ public class CreateWindow {
         displayServerConnection.setText(text);
     }
 
-    public static void addEventFinishWindow(EventModel event, EventTracking eventTracking) {
+    public static void addEventFinishWindow(EventModel event, EventTracking eventTracking, Thread stopEvent) {
         String text = "#####################\n       WARNING       \n\n"
                         + "EventName: " + event.getEventName()
                         + "\nDangerLevel: " + event.getSeverity()
@@ -127,6 +127,7 @@ public class CreateWindow {
                 eventOneStop.addActionListener((ActionEvent e) -> {
                     eventTracking.removeActiveEvent(event);
                     eventPanel.remove(eventOnePanel);
+                    stopEvent.interrupt();
                 });
                 displayEventOne.setText(text);
                 eventOnePanel.add(addEventOneScroll);
@@ -137,6 +138,7 @@ public class CreateWindow {
                 eventTwoStop.addActionListener((ActionEvent e) -> {
                     eventTracking.removeActiveEvent(event);
                     eventPanel.remove(eventTwoPanel);
+                    stopEvent.interrupt();
                 });
                 displayEventTwo.setText(text);
                 eventTwoPanel.add(addEventTwoScroll);
@@ -147,6 +149,7 @@ public class CreateWindow {
                 eventThreeStop.addActionListener((ActionEvent e) -> {
                     eventTracking.removeActiveEvent(event);
                     eventPanel.remove(eventThreePanel);
+                    stopEvent.interrupt();
                 });
                 displayEventThree.setText(text);
                 eventThreePanel.add(addEventThreeScroll);

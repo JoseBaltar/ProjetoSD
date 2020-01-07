@@ -33,14 +33,16 @@ public class SendReportsThread extends Thread {
 
     @Override
     public void run() {
-        while(!Thread.interrupted()) {
+        while(!this.isInterrupted()) {
             try {
                 Thread.sleep(REPORT_SEND_TIMER);
                 byte[] buf = logInformation().getBytes();
                 DatagramPacket packet = new DatagramPacket(buf, buf.length, serverAddress, serverListeningPort);
                 socket.send(packet);
-            } catch (InterruptedException | IOException e) {
+            } catch (IOException e) {
                 e.printStackTrace();
+            } catch (InterruptedException e) {
+                break;
             }
         }
 
@@ -60,8 +62,9 @@ public class SendReportsThread extends Thread {
 
     private String logInformation(){
         float currentelapsedtime = (System.currentTimeMillis() - eventModel.getInitime()) / 100;
-        return "ID:" + eventModel.getId() + "LocationName: " + MiddleClient.getThisLocationName()
-                + ", EventName: " + eventModel.getEventName() + ", Description: " + eventModel.getDescription()
+        return "ID: " + eventModel.getId() + ", LocationName: " + MiddleClient.getThisLocationName()
+                + ", EventName: " + eventModel.getEventName() + ", DangerLevel: " + eventModel.getSeverity()
+                + ", Description: " + eventModel.getDescription()
                 + ", NumberOfNotifiedClients: " + eventModel.getNotifiedCount() + ", CurrentTimeSeconds: " + currentelapsedtime;
     }
   

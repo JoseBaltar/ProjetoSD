@@ -1,0 +1,6 @@
+jan 07, 2020 1:19:09 AM server.ReceiveReportsThread LogReport
+INFO: ID: ForestFire2020-01-07 01:18:39.791, LocationName: Test, EventName: ForestFire, DangerLevel: 1, Description: sadqweqweasd, NumberOfNotifiedClients: 1, CurrentTimeSeconds: 300.0
+jan 07, 2020 1:20:19 AM server.ReceiveReportsThread LogReport
+INFO: ID: ForestFire2020-01-07 01:19:49.895, LocationName: Test, EventName: ForestFire, DangerLevel: 1, Description: sadqweqweasd, NumberOfNotifiedClients: 1, CurrentTimeSeconds: 300.0
+jan 07, 2020 1:20:49 AM server.ReceiveReportsThread LogReport
+INFO: ID: ForestFire2020-01-07 01:19:49.895, LocationName: Test, EventName: ForestFire, DangerLevel: 1, Description: sadqweqweasd, NumberOfNotifiedClients: 1, CurrentTimeSeconds: 600.0

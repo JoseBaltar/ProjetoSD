@@ -24,13 +24,23 @@ public class EventTracking {
     }
 
     /**
-     * Adds an occurring event to the current ative event list.
+     * Removes an event from the current ative event list.
      * 
      * @param event event instance that represents a currently active event
-     * @return true if added, false otherwise
+     * @return true if removed, false otherwise
      */
     public synchronized boolean removeActiveEvent(EventModel event) {
         return currentEvents.remove(event);
+    }
+
+    public synchronized boolean removeActiveEvent(String location, int dangerDegree) {
+        Iterator<EventModel> it = currentEvents.iterator();
+        while (it.hasNext()) {
+            EventModel next = it.next();
+            if (location.equals(next.getLocationName()) && dangerDegree == next.getSeverity())
+                return currentEvents.remove(next);
+        }
+        return false;
     }
 
     public synchronized EventModel getActiveEvent(String location, int dangerDegree) {

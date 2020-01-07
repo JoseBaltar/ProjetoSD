@@ -24,7 +24,7 @@ public class EventTracking {
     }
 
     /**
-     * Adds an occurring event to the current ative event list.
+     * Remove the current ative event from list.
      * 
      * @param event event instance that represents a currently active event
      * @return true if added, false otherwise

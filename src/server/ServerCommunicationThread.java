@@ -134,7 +134,6 @@ public class ServerCommunicationThread extends Thread {
                             } else {
                                 /** Process notification sent by client: location:location;danger-degree;description */
                                 processed = processEvent(clientInp);
-                                System.out.println("\n\nTEST: receive event notification from Middle-Client, check. Notification: " + processed);
 
                                 if (processed.startsWith("create-event")) {
                                     /** Execute server actions on a new event */
@@ -159,6 +158,8 @@ public class ServerCommunicationThread extends Thread {
                                         sendOcurrenceWarning(event, ip, port, thread.getLocalPort()); // check if location received notification
                                         System.out.println("> Location IP: " + ip + "; PORT: " + port);
                                     }
+                                } else {
+                                    System.out.println(SEP + "Event already in progress!" + SEP);
                                 }
                             }
                         } /** client input waiting cicle */
