@@ -3,23 +3,11 @@ package client;
 import java.io.*;
 import java.net.*;
 
-import javax.swing.JFrame;
-import javax.swing.JPanel;
-import javax.swing.JLabel;
-import javax.swing.JScrollPane;
-import javax.swing.JTextField;
-import javax.swing.JTextArea;
-
 /**
  * Opens a {@link java.net.MulticastSocket} to wait for Event Notifications
  * and print them in a JAVA SWING window
  */
-public class ReceiveNotificationThread extends Thread {
-
-    private JFrame guiFrame;
-    private JTextArea displayIncoming;
-    private JTextArea displayLast;
-    private JTextArea displayList; 
+public class ReceiveNotificationThread extends Thread { 
 
     protected String multicastSocketIP;
     protected int port;
@@ -53,26 +41,15 @@ public class ReceiveNotificationThread extends Thread {
                 String received = new String(packet.getData(), 0, packet.getLength());
                 String[] params = received.split(","); 
                 String description = params[0], name = params[1], location = params[2];
-                showIncomingEvent(location, name, description);
+                long time = Long.parseLong(params[3]);
+                int level = Integer.parseInt(params[4]);
+                CreateWindow.showIncomingEvent(location, name, description, time, level);
             }
 
             socket.leaveGroup(address);
         } catch (IOException e) {
             e.printStackTrace();
         }
-    }
-
-    private void showIncomingEvent(String location, String eventName, String description) {
-
-    }
-
-    /**
-     * TODO
-     * @param event
-     */
-    private void createEventNotificationWindow() {
-        // create the window to display incoming notifications
-        guiFrame = new JFrame();
     }
 
 }

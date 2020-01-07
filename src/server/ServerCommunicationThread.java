@@ -38,6 +38,7 @@ public class ServerCommunicationThread extends Thread {
     private EventTracking eventTracking;
 
     private MiddleClientLoginProtocol login_protocol;
+    private String locationAddress = "";
 
     ServerCommunicationThread(Socket clientConnection, UserTracking userTracking, ConnectionsTracking connectionsTracking, 
                         EventTracking eventTracking, String path) {
@@ -64,6 +65,8 @@ public class ServerCommunicationThread extends Thread {
                 out.println(INVALID_USER);
                 clientConnection.close();
                 return;
+            } else {
+                out.println("OK");
             }
 
             boolean quit = false; // quit communication (client input)
@@ -88,11 +91,14 @@ public class ServerCommunicationThread extends Thread {
                         /** Middle-Client Logged-In */
                         out.println(processed);
                         // get extra information from middle-client to enable sending occurence notifications
-                        multicastAddress = login_protocol.processInput(in.readLine());
+                        locationAddress = in.readLine();
+                        multicastAddress = login_protocol.processInput(locationAddress);
                         // send locationName, multicast IP and Port to middle-client
                         locationName = login_protocol.getLocationName();
                         out.println(locationName + ":" + multicastAddress);
-
+                        // get location listening address
+                        CreateWindow.addActiveConnection(in.readLine());
+                        
                         System.out.println(DISPLAY + PROCESSING);
                         while ((clientInp = in.readLine()) != null) {
                             /** Start processing End-Client requests, redirected by Middle-Client */
@@ -100,7 +106,7 @@ public class ServerCommunicationThread extends Thread {
                             if (clientInp.startsWith("%register")) {
                                 clientUsername = clientInp.substring(clientInp.indexOf(":") + 1);
                                 /** When a client is registered, save it in file and Data Structure */
-                                System.out.println(DISPLAY + REGISTER);
+                                System.out.println(DISPLAY + REGISTER + "Username: " + clientUsername);
                                 if (addRegisteredMiddleClientUserToFile(clientUsername, locationName)
                                     && userTracking.getLoggedMiddleClient(locationName).addRegisteredUser(clientUsername))
                                     System.out.println("Operation Successful!");
@@ -110,7 +116,7 @@ public class ServerCommunicationThread extends Thread {
                             } else if (clientInp.startsWith("%login")) {
                                 clientUsername = clientInp.substring(clientInp.indexOf(":") + 1);
                                 /** When a client logs in into this Location Client, save it into Data Structure */
-                                System.out.println(DISPLAY + LOGIN);
+                                System.out.println(DISPLAY + LOGIN + "Username: " + clientUsername);
                                 if (userTracking.getLoggedMiddleClient(locationName).addLoggedUser(clientUsername))
                                     System.out.println("Operation Successful!");
                                 else
@@ -119,7 +125,7 @@ public class ServerCommunicationThread extends Thread {
                             } else if (clientInp.startsWith("%logout")) {
                                 clientUsername = clientInp.substring(clientInp.indexOf(":") + 1);
                                 /** When a client logs out from this Location Client, update it Data Structure */
-                                System.out.println(DISPLAY + LOGOUT);
+                                System.out.println(DISPLAY + LOGOUT + "Username: " + clientUsername);
                                 if (userTracking.getLoggedMiddleClient(locationName).removeLoggedUser(clientUsername))
                                     System.out.println("Operation Successful!");
                                 else
@@ -145,7 +151,7 @@ public class ServerCommunicationThread extends Thread {
                                     // method "processEvent" already verifies locations given the danger-degree
                                     for (String location : locations) {
                                         // start the UDP socket connection thread for receiving reports
-                                        ReceiveReportsThread thread = new ReceiveReportsThread();
+                                        ReceiveReportsThread thread = new ReceiveReportsThread(eventTracking);
                                         thread.start();
                                         // notify client
                                         ip = location.substring(0, location.indexOf("/"));
@@ -165,6 +171,8 @@ public class ServerCommunicationThread extends Thread {
         
         } catch (IOException e) {
             System.out.println(SEP + FINISH + SEP);
+            userTracking.logoutMiddleClient(userTracking.getLoggedMiddleClientByAddress(locationAddress).getLocationName());
+            CreateWindow.removeActiveConnection(locationAddress);
         }
     }
 
@@ -222,10 +230,6 @@ public class ServerCommunicationThread extends Thread {
         return prefix + "?" + eventDetails + ";" + locations;
     }
 
-    private void addLoggedMiddleClientConnectionToWindow() {
-        // guardar numa variavel desta classe a JsonArea respetiva para escrever aqui
-    }
-
     /**
      * Sends a DatagramPacket with the event information to the given address to start listening for
      * reports.
@@ -277,7 +281,7 @@ public class ServerCommunicationThread extends Thread {
             location = it.next().getAsJsonObject();
             if (locationName.equals(location.get("locationName").getAsString())) {
                 users = location.get("registeredUsers").getAsJsonArray();
-                users.add(locationName);
+                users.add(username);
                 location.add("registeredUsers", users);
             } else {
                 i++;

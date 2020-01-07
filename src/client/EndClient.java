@@ -31,9 +31,10 @@ public class EndClient {
         String userInput, serverOutput; // store input from user and output from protocol, respectively
 
         boolean quit = false, exit = false;
+        String[] params;
         int separator;
 
-        String multicastIP;
+        String multicastIP, clientName;
         int multicastPort;
         Thread notificationThread = null;
 
@@ -78,13 +79,17 @@ public class EndClient {
                                     
                                     // Open thread for processing occurrence warnings
                                     serverOutput = from_server.readLine(); // get extra information from server
+                                    params = serverOutput.split(":");
                                     separator = serverOutput.indexOf("/");
-                                    multicastIP = serverOutput.substring(0, separator);
-                                    multicastPort = Integer.parseInt(serverOutput.substring(separator + 1));
+                                    clientName = params[0];
+                                    multicastIP = params[1].substring(0, separator);
+                                    multicastPort = Integer.parseInt(params[1].substring(separator + 1));
                                     notificationThread = new ReceiveNotificationThread(multicastIP, multicastPort);
                                     notificationThread.start();
 
                                     // Continue communication with the server. Send notifications.
+                                    CreateWindow.createActiveEventWindow();
+                                    CreateWindow.setDisplayText(" End-Client from User " + clientName + "!\n Showing incoming Events below.");
                                     System.out.print(LOGOUT_INFO + SERVER_RESPONSE + from_server.readLine() + CLIENT_MESSAGE);
                                     while (!quit && (userInput = stdIn.readLine()) != null) {
                                         /** Client - Middle_Client. Start receiving event notifications */
@@ -135,5 +140,6 @@ public class EndClient {
 
         } /** change location cicle */ 
         stdIn.close();
+        CreateWindow.dispose();
     }
 }

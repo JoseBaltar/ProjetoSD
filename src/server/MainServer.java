@@ -2,6 +2,8 @@ package server;
 
 import com.google.gson.*;
 
+import server.utils.CreateWindow;
+
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
@@ -36,6 +38,11 @@ public class MainServer {
         try (
             ServerSocket serverSocket = new ServerSocket(0)
         ) {
+            CreateWindow.createActiveConnectionsListWindow();
+            CreateWindow.setDisplayText(" Main-Server!\n Listening for clients at ->"
+                                                                    + "\n\n Current Locations connected shown below\n    when active.");
+                                        CreateWindow.setDisplayServerConnectionText("IP: " + serverSocket.getInetAddress().getHostAddress() 
+                                                                            + "| PORT: " + serverSocket.getLocalPort());
             System.out.print(LISTENING_INFO + serverSocket.getLocalPort() + SEP);
             Socket clientSocket;
             while (true) {
@@ -46,11 +53,7 @@ public class MainServer {
         } catch (IOException e) {
             System.err.println("Could not listen with ServerSocket!");
         }
-    }
-
-    private void createConnectionListWindow() {
-        // lista com as conexão ao servidor e conexões de Middle-Clients
-        // envia o objeto da TextArea para a thread de comunicação para escrever 
+        CreateWindow.dispose();
     }
 
     /**

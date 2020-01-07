@@ -68,6 +68,8 @@ public class MiddleClientCommunicationThread extends Thread {
                 out_cli.println(INVALID_USER);
                 clientConnection.close();
                 return;
+            } else {
+                out_cli.println("OK");
             }
             
             boolean quit = false;
@@ -98,7 +100,7 @@ public class MiddleClientCommunicationThread extends Thread {
                         System.out.println(DISPLAY + LOGIN);
                         out_cli.println(LOGIN);
                         // send extra information to client, about the multicast connection
-                        out_cli.println(multicastIPAddress + "/" + multicastPort);
+                        out_cli.println(login_protocol.getLoginUsername() + ":" + multicastIPAddress + "/" + multicastPort);
                         // notify server of client login on this location
                         outMainServer.println("%login:" + login_protocol.getLoginUsername());
                         

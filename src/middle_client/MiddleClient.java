@@ -5,6 +5,7 @@ import com.google.gson.*;
 import java.io.*;
 import java.net.*;
 
+import middle_client.utils.CreateWindow;
 import middle_client.utils.EventTracking;
 import middle_client.utils.UserTracking;
 
@@ -40,9 +41,11 @@ public class MiddleClient {
 
     public static void main(String[] args) throws IOException {
 
+        MiddleClient client = new MiddleClient();
+
         /** Argument variables */
-        String serverIP = args[0];
-        int serverPort = Integer.parseInt(args[1]);
+        String serverIP; // = args[0];
+        int serverPort; // = Integer.parseInt(args[1]);
         boolean exit = false;
 
         /** After Login variables */
@@ -130,7 +133,13 @@ public class MiddleClient {
                                     try (
                                         ServerSocket serverSocket = new ServerSocket(0)
                                     ) {
+                                        to_server.println(serverSocket.getInetAddress().getHostAddress() + "/" + serverSocket.getLocalPort());
                                         System.out.print(LISTENING_INFO + serverSocket.getLocalPort() + SEP);
+                                        CreateWindow.createActiveEventListWindow();
+                                        CreateWindow.setDisplayText(" Middle-Client from " + locationName + "!\n Listening for clients at ->"
+                                                                    + "\n\n Current events will show below\n    when active.");
+                                        CreateWindow.setDisplayServerConnectionText("IP: " + serverSocket.getInetAddress().getHostAddress() 
+                                                                            + "| PORT: " + serverSocket.getLocalPort());
                                         Socket clientConnection;
                                         while (true) {
                                             clientConnection = serverSocket.accept();
@@ -165,14 +174,11 @@ public class MiddleClient {
 
         } /** change location cicle */ 
         stdIn.close();
+        CreateWindow.dispose();
     }
 
     public static String getThisLocationName() {
         return locationName;
-    }
-
-    private void createConnectionListWindow() {
-        //
     }
 
     /**

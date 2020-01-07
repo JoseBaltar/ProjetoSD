@@ -2,6 +2,7 @@ package middle_client.protocols;
 
 import com.google.gson.*;
 
+import middle_client.models.RegisterClientModel;
 import middle_client.utils.UserTracking;
 
 import java.io.*;

@@ -1,0 +1,26 @@
+jan 07, 2020 12:12:37 AM server.ReceiveReportsThread LogReport
+INFO: ID:ForestFire2020-01-07 00:12:07.722LocationName: Test, EventName: ForestFire, Description: asdasasd, NumberOfNotifiedClients: 1, CurrentTimeSeconds: 300.0
+jan 07, 2020 12:13:07 AM server.ReceiveReportsThread LogReport
+INFO: ID:ForestFire2020-01-07 00:12:07.722LocationName: Test, EventName: ForestFire, Description: asdasasd, NumberOfNotifiedClients: 1, CurrentTimeSeconds: 600.0
+jan 07, 2020 12:13:37 AM server.ReceiveReportsThread LogReport
+INFO: ID:ForestFire2020-01-07 00:12:07.722LocationName: Test, EventName: ForestFire, Description: asdasasd, NumberOfNotifiedClients: 1, CurrentTimeSeconds: 900.0
+jan 07, 2020 12:14:07 AM server.ReceiveReportsThread LogReport
+INFO: ID:ForestFire2020-01-07 00:12:07.722LocationName: Test, EventName: ForestFire, Description: asdasasd, NumberOfNotifiedClients: 1, CurrentTimeSeconds: 1200.0
+jan 07, 2020 12:14:37 AM server.ReceiveReportsThread LogReport
+INFO: ID:ForestFire2020-01-07 00:12:07.722LocationName: Test, EventName: ForestFire, Description: asdasasd, NumberOfNotifiedClients: 1, CurrentTimeSeconds: 1500.0
+jan 07, 2020 12:15:07 AM server.ReceiveReportsThread LogReport
+INFO: ID:ForestFire2020-01-07 00:12:07.722LocationName: Test, EventName: ForestFire, Description: asdasasd, NumberOfNotifiedClients: 1, CurrentTimeSeconds: 1800.0
+jan 07, 2020 12:15:37 AM server.ReceiveReportsThread LogReport
+INFO: ID:ForestFire2020-01-07 00:12:07.722LocationName: Test, EventName: ForestFire, Description: asdasasd, NumberOfNotifiedClients: 1, CurrentTimeSeconds: 2100.0
+jan 07, 2020 12:16:07 AM server.ReceiveReportsThread LogReport
+INFO: ID:ForestFire2020-01-07 00:12:07.722LocationName: Test, EventName: ForestFire, Description: asdasasd, NumberOfNotifiedClients: 1, CurrentTimeSeconds: 2400.0
+jan 07, 2020 12:16:37 AM server.ReceiveReportsThread LogReport
+INFO: ID:ForestFire2020-01-07 00:12:07.722LocationName: Test, EventName: ForestFire, Description: asdasasd, NumberOfNotifiedClients: 1, CurrentTimeSeconds: 2700.0
+jan 07, 2020 12:17:07 AM server.ReceiveReportsThread LogReport
+INFO: ID:ForestFire2020-01-07 00:12:07.722LocationName: Test, EventName: ForestFire, Description: asdasasd, NumberOfNotifiedClients: 1, CurrentTimeSeconds: 3000.0
+jan 07, 2020 12:17:37 AM server.ReceiveReportsThread LogReport
+INFO: ID:ForestFire2020-01-07 00:12:07.722LocationName: Test, EventName: ForestFire, Description: asdasasd, NumberOfNotifiedClients: 1, CurrentTimeSeconds: 3300.0
+jan 07, 2020 12:18:07 AM server.ReceiveReportsThread LogReport
+INFO: ID:ForestFire2020-01-07 00:12:07.722LocationName: Test, EventName: ForestFire, Description: asdasasd, NumberOfNotifiedClients: 1, CurrentTimeSeconds: 3600.0
+jan 07, 2020 12:18:37 AM server.ReceiveReportsThread LogReport
+INFO: ID:ForestFire2020-01-07 00:12:07.722LocationName: Test, EventName: ForestFire, Description: asdasasd, NumberOfNotifiedClients: 1, CurrentTimeSeconds: 3900.0

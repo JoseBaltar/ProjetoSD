@@ -3,9 +3,8 @@ package middle_client;
 import java.io.IOException;
 import java.net.*;
 
-import javax.swing.JFrame;
-
 import middle_client.models.EventModel;
+import middle_client.utils.CreateWindow;
 import middle_client.utils.EventTracking;
 import middle_client.utils.UserTracking;
 
@@ -15,8 +14,6 @@ import middle_client.utils.UserTracking;
  * Faz uso de um socket UDP e retorna um "check" para o servidor quando recebe a notificação.
  */
 public class WaitOccurrenceThread extends Thread {
-
-    private JFrame guiFrame; 
 
     private DatagramSocket listeningSocket = null;
     private DatagramSocket broadcastSocket = null;
@@ -76,14 +73,15 @@ public class WaitOccurrenceThread extends Thread {
                 notifiedEvent = new EventModel(eventSeverity, description);
                 // broadcast the ocurrence to all clients
                 this.broadcastEventToClients(notifiedEvent.getDescription(), notifiedEvent.getEventName(), 
-                                MiddleClient.getThisLocationName(), multicastIPAddress, multicastPort);
+                            MiddleClient.getThisLocationName(), notifiedEvent.getInitime(), notifiedEvent.getSeverity(),
+                            multicastIPAddress, multicastPort);
                 // start sending reports to the server
                 Thread event = new SendReportsThread(address, serverListeningPort, notifiedEvent);
                 event.start();
 
                 // add event to shared object
                 eventTracking.addActiveEvent(notifiedEvent);
-                this.createEventFinishWindow(event);
+                CreateWindow.addEventFinishWindow(notifiedEvent, eventTracking);
 
             } catch (IOException e) {
                 e.printStackTrace();
@@ -92,16 +90,6 @@ public class WaitOccurrenceThread extends Thread {
         }
         if (broadcastSocket != null) listeningSocket.close();
         if (broadcastSocket != null) broadcastSocket.close();
-    }
-
-    
-    /**
-     * TODO
-     * @param event
-     */
-    private void createEventFinishWindow(Thread event) {
-        // interrupt thread and remove event from shared object
-        guiFrame = new JFrame();
     }
 
     /**
@@ -114,11 +102,11 @@ public class WaitOccurrenceThread extends Thread {
      * @param multicastIP multicast address group to send the notification
      * @param multicastPort listening port for the sockets
      */
-    public void broadcastEventToClients(String description, String name, String location, 
+    public void broadcastEventToClients(String description, String name, String location, long time, int level,
                             String multicastIP, int multicastPort) {
         try {
             // construct packet
-            byte[] buf = (name + "," + description + "," + location).getBytes(); // = "VAO TODOS MORRER".getBytes();
+            byte[] buf = (name + "," + description + "," + location + "," + time + "," + level).getBytes(); // = "VAO TODOS MORRER".getBytes();
 
             // send it
             InetAddress group = InetAddress.getByName(multicastIP);

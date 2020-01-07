@@ -50,6 +50,16 @@ public class UserTracking {
         return null;
     }
 
+    public MiddleClientModel getLoggedMiddleClientByAddress(String locationAddress) {
+        Iterator<MiddleClientModel> it = loggedClients.iterator();
+        while (it.hasNext()) {
+            MiddleClientModel next = it.next();
+            if (locationAddress.equals(next.locationAddress))
+                return next;
+        }
+        return null;
+    }
+
     public synchronized boolean isMiddleClientLogged(String locationName) {
         return (getLoggedMiddleClient(locationName) != null ? true : false);
     }

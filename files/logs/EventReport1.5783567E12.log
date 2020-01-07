@@ -1,0 +1,6 @@
+jan 07, 2020 12:25:43 AM server.ReceiveReportsThread LogReport
+INFO: ID:Earthquake2020-01-07 00:25:13.544LocationName: Test, EventName: Earthquake, Description: qewewqqeqwe, NumberOfNotifiedClients: 1, CurrentTimeSeconds: 300.0
+jan 07, 2020 12:26:13 AM server.ReceiveReportsThread LogReport
+INFO: ID:Earthquake2020-01-07 00:25:13.544LocationName: Test, EventName: Earthquake, Description: qewewqqeqwe, NumberOfNotifiedClients: 1, CurrentTimeSeconds: 600.0
+jan 07, 2020 12:26:43 AM server.ReceiveReportsThread LogReport
+INFO: ID:Earthquake2020-01-07 00:25:13.544LocationName: Test, EventName: Earthquake, Description: qewewqqeqwe, NumberOfNotifiedClients: 1, CurrentTimeSeconds: 900.0

@@ -13,13 +13,13 @@ Sistema Distribuido à base de sockets em Java para Aviso de Catástrofes
 
     *MainServer*
 
-    > javac -d ../bin -cp ../resources/gson-2.8.5.jar server/*.java server/utils/*.java
+    > javac -d ../bin -cp ../resources/gson-2.8.5.jar server/*.java server/utils/*.java server/protocols/*.java server/models/*.java
 
     > java -cp ../resources/gson-2.8.5.jar;../bin; server.MainServer
 
     *Middle-Client*
 
-    > javac -d ../bin -cp ../resources/gson-2.8.5.jar middle_client/*.java middle_client/utils/*.java
+    > javac -d ../bin -cp ../resources/gson-2.8.5.jar middle_client/*.java middle_client/utils/*.java middle_client/protocols/*.java middle_client/models/*.java
 
     > java -cp ../resources/gson-2.8.5.jar;../bin; middle_client.MiddleClient
 

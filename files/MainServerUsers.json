@@ -1,1 +1,1 @@
-[{"password":"pass","locationName":"Test","multicastAddress":"230.0.0.2/65534","registeredUsers":["TEST","Test"]}]
+[{"password":"pass","locationName":"Test","multicastAddress":"230.0.0.2/65534","registeredUsers":["TEST","TEST2","TEST3","TEST4"]},{"password":"pass2","locationName":"Testtwo","multicastAddress":"230.0.0.3/65534","registeredUsers":[]}]
