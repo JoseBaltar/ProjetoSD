@@ -80,7 +80,7 @@ public class EndClient {
                                     // Open thread for processing occurrence warnings
                                     serverOutput = from_server.readLine(); // get extra information from server
                                     params = serverOutput.split(":");
-                                    separator = serverOutput.indexOf("/");
+                                    separator = params[1].indexOf("/");
                                     clientName = params[0];
                                     multicastIP = params[1].substring(0, separator);
                                     multicastPort = Integer.parseInt(params[1].substring(separator + 1));
