@@ -1,4 +1,4 @@
-# ProjetoSD
+# Projeto Sistemas Distribuídos - 2019/2020
 Sistema Distribuido à base de sockets em Java para Aviso de Catástrofes
 
 <h2>Como executar este projeto:</h2>
